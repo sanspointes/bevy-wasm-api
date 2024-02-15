@@ -1,0 +1,11 @@
+[package]
+name = "bevy-wasm-api"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+resolver = "2"
+
+members = [ "bevy-wasm-api-macro","bevy-wasm-api-macro-core" ]
+
+[dependencies]
