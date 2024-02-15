@@ -7,6 +7,10 @@ use crate::bevy_wasm_api::lower;
 
 pub fn bevy_wasm_api(_attr: TokenStream, ts: TokenStream) -> TokenStream {
     let model = analyze::analyze(ts.into());
+    let model = match model {
+        Ok(model) => model,
+        Err(v) => return v.to_compile_error(),
+    };
     let ir = lower::lower(model);
     let _ = codegen::codegen(ir);
     TokenStream::new()
