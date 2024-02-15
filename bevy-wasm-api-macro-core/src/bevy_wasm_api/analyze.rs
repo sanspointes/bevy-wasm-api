@@ -122,7 +122,9 @@ pub fn analyze(ts: TokenStream) -> syn::Result<Model> {
 }
 
 mod tests {
-    use quote::quote;
+    use quote::{quote, ToTokens};
+    use crate::analyze::MethodModel;
+
     use super::analyze;
 
     #[test]
@@ -171,5 +173,45 @@ mod tests {
         };
         let result = analyze(ast);
         assert_eq!(result.is_ok(), true);
+    }
+
+    #[test]
+    pub fn allows_methods_with_no_return_value() {
+        let ast = quote! {
+            impl MyApi {
+                pub fn my_fn(&self, arg1: &mut i32) {
+                    "Hello".to_string()
+                }
+            }
+        };
+        let model = analyze(ast).unwrap();
+        assert_eq!(model.method_definitions.len(), 1);
+        let first = model.method_definitions.first().unwrap();
+        assert_eq!(first.method_name.to_string(), "my_fn");
+        match &first.method_output {
+            syn::ReturnType::Default => (),
+            _ => panic!("never"),
+        }
+    }
+
+    #[test]
+    pub fn extracts_method_output() {
+        let ast = quote! {
+            impl MyApi {
+                pub fn my_fn(&self, arg1: &mut i32) -> String {
+                    "Hello".to_string()
+                }
+            }
+        };
+        let model = analyze(ast).unwrap();
+        assert_eq!(model.method_definitions.len(), 1);
+        let first = model.method_definitions.first().unwrap();
+        assert_eq!(first.method_name.to_string(), "my_fn");
+        match &first.method_output {
+            syn::ReturnType::Type(_, return_type) => {
+                assert_eq!(return_type.into_token_stream().to_string(), "String");
+            }
+            syn::ReturnType::Default => panic!("never"),
+        }
     }
 }

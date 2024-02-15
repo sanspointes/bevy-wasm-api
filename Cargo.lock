@@ -342,6 +342,9 @@ dependencies = [
 [[package]]
 name = "bevy-wasm-api"
 version = "0.1.0"
+dependencies = [
+ "bevy-wasm-api-macro",
+]
 
 [[package]]
 name = "bevy-wasm-api-macro"
