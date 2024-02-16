@@ -6,7 +6,12 @@ edition = "2021"
 [workspace]
 resolver = "2"
 
-members = [ "bevy-wasm-api-macro","bevy-wasm-api-macro-core" ]
+members = [ "bevy-wasm-api-macro","bevy-wasm-api-macro-core" , "examples/wasm-app"]
 
 [dependencies]
+bevy = { version = "0.12.1", default-features = false }
 bevy-wasm-api-macro = { version = "0.1.0", path = "bevy-wasm-api-macro" }
+futures = "0.3.30"
+js-sys = "0.3.68"
+wasm-bindgen = "0.2.91"
+wasm-bindgen-futures = "0.4.41"

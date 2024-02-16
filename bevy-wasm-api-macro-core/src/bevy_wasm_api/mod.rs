@@ -2,11 +2,11 @@ mod utils;
 pub mod analyze;
 pub mod codegen;
 
+#[allow(unused_imports)]
 mod tests {
-    use proc_macro2::Literal;
     use quote::quote;
 
-    use super::{analyze::analyze, codegen::codegen};
+    use crate::bevy_wasm_api::{analyze::analyze, codegen::codegen};
 
     #[test]
     pub fn integration_example() {

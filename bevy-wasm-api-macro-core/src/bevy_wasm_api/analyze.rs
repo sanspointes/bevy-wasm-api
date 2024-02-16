@@ -11,6 +11,7 @@ pub struct MethodModel {
 
 #[derive(Debug)]
 pub struct Model {
+    pub original_tokens: TokenStream,
     pub struct_name: Ident,
     pub method_definitions: Vec<MethodModel>,
 }
@@ -21,13 +22,6 @@ fn extract_first_method_argument(args: &Punctuated<FnArg, Comma>) -> syn::Result
 
     println!("Args length: {}", args.len());
 
-    // Skip the self receiver provided it exists.
-    if let Some(f) = first {
-        if matches!(f, FnArg::Receiver(_)) {
-            first = iter.next();
-        }
-    }
-
     if first.is_none() {
         return Err(Error::new_spanned(args, "Missing first argument on function.  First argument must be of type &mut World."));
     }
@@ -37,6 +31,7 @@ fn extract_first_method_argument(args: &Punctuated<FnArg, Comma>) -> syn::Result
 }
 
 pub fn analyze(ts: TokenStream) -> syn::Result<Model> {
+    let original_tokens = ts.clone();
     let ast = syn::parse2::<ItemImpl>(ts).unwrap();
     let struct_name = match *ast.self_ty {
         syn::Type::Path(ref path) => path.path.get_ident().expect("Expected identifier"),
@@ -57,6 +52,10 @@ pub fn analyze(ts: TokenStream) -> syn::Result<Model> {
 
             let (first, remaining) = extract_first_method_argument(method_inputs)?;
             println!("\nFirst: {first:?}\nRemaining: {remaining:?}");
+
+            if let FnArg::Receiver(_) = &first {
+                return Err(Error::new_spanned(first.clone(), "Can't use receiver arguments.  First argument must be `arg1: &mut World`."))
+            }
 
             let FnArg::Typed(ref first_typed) = first else {
                 return Err(Error::new_spanned(first.clone(), "First argument in function is not typed. First argument must be `arg1: &mut World`. Instead found {:?}."));
@@ -116,16 +115,17 @@ pub fn analyze(ts: TokenStream) -> syn::Result<Model> {
     }
 
     Ok(Model {
+        original_tokens,
         struct_name: struct_name.clone(),
         method_definitions,
     })
 }
 
 mod tests {
-    use quote::{quote, ToTokens};
-    use crate::analyze::MethodModel;
+    
+    
 
-    use super::analyze;
+    
 
     #[test]
     pub fn extracts_struct_name() {
