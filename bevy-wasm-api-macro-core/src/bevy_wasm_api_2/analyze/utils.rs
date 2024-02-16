@@ -1,13 +1,21 @@
+use std::fmt::Display;
+
 use proc_macro2::Ident;
 use syn::{
     punctuated::Punctuated, spanned::Spanned, token::Comma, Error, FnArg, GenericArgument, Type,
-    TypePath, Pat, ReturnType,
+    TypePath, Pat, ReturnType, ImplItemFn,
 };
 
 #[derive(Debug)]
-pub(super) struct TypescriptArg {
+pub struct TypescriptArg {
     pub ident: Ident,
     pub ty: TypescriptType,
+}
+
+impl Display for TypescriptArg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {}", self.ident, self.ty)
+    }
 }
 
 impl TryFrom<&FnArg> for TypescriptArg {
@@ -38,7 +46,7 @@ impl TryFrom<&FnArg> for TypescriptArg {
 }
 
 #[derive(Debug)]
-pub(super) enum TypescriptType {
+pub enum TypescriptType {
     Void,
     String,
     Number,
@@ -46,6 +54,18 @@ pub(super) enum TypescriptType {
     Promise(Box<TypescriptType>),
     // Array(Box<TypescriptType>),
     // Tuple(Vec<TypescriptType>),
+}
+
+impl Display for TypescriptType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TypescriptType::Void => write!(f, "void"),
+            TypescriptType::String => write!(f, "string"),
+            TypescriptType::Number => write!(f, "number"),
+            TypescriptType::Class(class) => write!(f, "{}", class),
+            TypescriptType::Promise(inner) => write!(f, "Promise<{}>", *inner),
+        }
+    }
 }
 
 impl TryFrom<&TypePath> for TypescriptType {
@@ -136,6 +156,51 @@ impl TryFrom<&ReturnType> for TypescriptType {
             //     )),
             // },
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct ApiMethodArgs {
+    pub world_ident: Ident,
+    pub api_args: Punctuated<FnArg, Comma>,
+}
+impl TryFrom<&Punctuated<FnArg, Comma>> for ApiMethodArgs {
+    type Error = Error;
+    fn try_from(value: &Punctuated<FnArg, Comma>) -> Result<Self, Self::Error> {
+        if value.is_empty() {
+            return Err(Error::new(value.span(), "Argument must have the at least 1 argument of `world: &mut World`."));
+        }
+
+        let mut iter = value.iter();
+        let first = iter.next().unwrap();
+        if let FnArg::Receiver(_) = &first {
+        }
+
+        let world_ident = match first {
+            FnArg::Receiver(_) => return Err(Error::new_spanned(first.clone(), "First argument must be `world: &mut World`.  Instead found `self`.")),
+            FnArg::Typed(ref first_typed) => {
+                match *first_typed.ty {
+                    Type::Reference(ref reference) => {
+                        if reference.mutability.is_none() {
+                            return Err(Error::new_spanned(reference, format!("First argument must be `world: &mut World`.  First argument is a reference but is not mutable {:?}.", reference)))
+                        }
+                    }
+                    ref unknown => return Err(Error::new_spanned(unknown, "First argument is unexpected type.  "))
+                }
+
+                match *first_typed.pat {
+                    Pat::Ident(ref ident) => {
+                        &ident.ident
+                    }
+                    ref unknown => return Err(Error::new_spanned(unknown, format!("First argument must be `world: &mut World`.  First argument has unexpected pattern {:?}.", unknown)))
+                }
+            }
+        };
+
+        Ok(ApiMethodArgs {
+            world_ident: world_ident.clone(),
+            api_args: iter.cloned().collect(),
+        })
     }
 }
 

@@ -35,6 +35,14 @@ impl MyApi {
         Ok(true)
     }
 
+    pub fn test_number(world: &mut World) -> i32 {
+        1337
+    }
+
+    pub fn test_string(world: &mut World) -> String {
+        "Hello".to_string()
+    }
+
     pub fn my_method(world: &mut World, r: f32, g: f32, b: f32) {
         let mut sys_state = SystemState::<(
             Commands,

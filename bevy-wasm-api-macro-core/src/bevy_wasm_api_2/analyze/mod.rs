@@ -6,12 +6,12 @@ use syn::spanned::Spanned;
 
 use crate::bevy_wasm_api_2::parse::Ast;
 
-use self::item_fn::{analyze_impl_item_fn, ImplItemFnModel};
+use self::item_fn::ImplItemFnModel;
 
 #[derive(Debug)]
 pub struct Model {
-    struct_name: Ident,
-    methods: Vec<ImplItemFnModel>,
+    pub struct_name: Ident,
+    pub methods: Vec<ImplItemFnModel>,
 }
 
 impl Model {
@@ -37,8 +37,8 @@ pub fn analyze(ast: Ast) -> syn::Result<Model> {
 
     for item in ast.items {
         if let syn::ImplItem::Fn(impl_item_fn) = item {
-            let impl_item_fn_model = analyze_impl_item_fn(&impl_item_fn)?;
-            model.methods.push(impl_item_fn_model);
+            let fn_model = ImplItemFnModel::try_from(&impl_item_fn)?;
+            model.methods.push(fn_model);
         }
     }
 

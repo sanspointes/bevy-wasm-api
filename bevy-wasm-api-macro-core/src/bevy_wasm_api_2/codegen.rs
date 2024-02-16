@@ -1,7 +1,24 @@
 use proc_macro2::TokenStream;
+use quote::quote;
 
-use crate::bevy_wasm_api_2::lower::Ir;
+use super::analyze::Model;
 
-pub fn codegen(_ir: Ir) -> TokenStream {
-    TokenStream::new()
+pub fn codegen(model: Model) -> TokenStream {
+    // Define typescript
+    let mut ts_method_definitions = String::new();
+    for method in &model.methods {
+        let mut s = format!("\t{}_js(", method.original_method_ident);
+
+        for arg in &method.typescript_arguments {
+            s += format!("{}", arg).as_str();
+        }
+        s += format!("): {};\n", method.typescript_return_type).as_str();
+        ts_method_definitions += &s;
+    }
+    let ts_class_def = format!("\nexport class {} {{\n{}}}\n", model.struct_name, ts_method_definitions);
+
+    quote! {
+        #[wasm_bindgen(typescript_custom_section)]
+        const TS_APPEND_CONTENT: &'static str = #ts_class_def;
+    }
 }

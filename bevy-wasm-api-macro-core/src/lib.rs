@@ -22,10 +22,16 @@ pub fn bevy_wasm_api_2(
         Ok(ast) => ast,
         Err(err) => return err.to_compile_error(),
     };
+    println!("Ast: {ast:?}\n");
+
     let model = match bevy_wasm_api_2::analyze::analyze(ast) {
         Ok(model) => model,
         Err(err) => return err.to_compile_error(),
     };
-    let ir = bevy_wasm_api_2::lower::lower(model);
-    bevy_wasm_api_2::codegen::codegen(ir)
+
+    println!("Model: {model:?}\n");
+    let tokens = bevy_wasm_api_2::codegen::codegen(model);
+
+    println!("Tokens: {tokens}\n");
+    tokens
 }
