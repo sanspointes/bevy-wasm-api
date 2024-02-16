@@ -26,7 +26,7 @@ pub fn setup_bb_core(canvas_id: String) {
     app.run();
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(skip_typescript)]
 struct MyApi;
 
 #[bevy_wasm_api]

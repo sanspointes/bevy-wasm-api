@@ -26,16 +26,16 @@ pub fn codegen(model: Model) -> TokenStream {
             let ident = get_ident_of_fn_arg(arg).unwrap();
             let ts_type = get_ts_type_of_fn_arg(arg);
             args += &format!("{}: {}", ident, ts_type);
-            if i < def.remaining_inputs.len() {
+            if i != def.remaining_inputs.len() - 1 {
                 args += ", "
             }
         }
 
-        ts_method_definitions += &format!("{}_wasm({args}) {};\n", def.method_name, ts_return_type);
+        ts_method_definitions += &format!("\t{}_wasm({args}) {};\n", def.method_name, ts_return_type);
     }
 
     let wasm_class_def = format!(
-        "\nexport class {} {{\n{} }}",
+        "\nexport class {} {{\n\tfree();\n\n{}}}",
         struct_name, ts_method_definitions
     );
 
@@ -79,7 +79,7 @@ pub fn codegen(model: Model) -> TokenStream {
         };
 
         rs_method_definitions.push(quote! {
-            #[wasm_bindgen()]
+            #[wasm_bindgen(skip_typescript)]
             pub fn #wasm_method_name(#(#input_method_args),*) -> bevy_wasm_api::Promise {
                 bevy_wasm_api::future_to_promise(bevy_wasm_api::execute_in_world(bevy_wasm_api::ExecutionChannel::FrameStart, move |#world_ident|{
                     let response = #struct_name::#method_name(#original_method_args);
@@ -95,7 +95,7 @@ pub fn codegen(model: Model) -> TokenStream {
         #[wasm_bindgen(typescript_custom_section)]
         const TS_APPEND_CONTENT: &'static str = #wasm_class_def;
 
-        #[wasm_bindgen]
+        #[wasm_bindgen(skip_typescript)]
         impl #struct_name {
             #( #rs_method_definitions )*
         }
