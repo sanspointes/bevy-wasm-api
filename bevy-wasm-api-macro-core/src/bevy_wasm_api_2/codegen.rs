@@ -12,7 +12,7 @@ pub fn codegen(model: Model) -> TokenStream {
         for arg in &method.typescript_arguments {
             s += format!("{}", arg).as_str();
         }
-        s += format!("): {};\n", method.typescript_return_type).as_str();
+        s += format!("): {};\n", method.typescript_return_type.wrapped_with_promise()).as_str();
         ts_method_definitions += &s;
     }
     let ts_class_def = format!("\nexport class {} {{\n{}}}\n", model.struct_name, ts_method_definitions);

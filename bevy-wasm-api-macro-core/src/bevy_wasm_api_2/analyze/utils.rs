@@ -3,7 +3,7 @@ use std::fmt::Display;
 use proc_macro2::Ident;
 use syn::{
     punctuated::Punctuated, spanned::Spanned, token::Comma, Error, FnArg, GenericArgument, Type,
-    TypePath, Pat, ReturnType, ImplItemFn,
+    TypePath, Pat, ReturnType,
 };
 
 #[derive(Debug)]
@@ -45,7 +45,7 @@ impl TryFrom<&FnArg> for TypescriptArg {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum TypescriptType {
     Void,
     String,
@@ -54,6 +54,15 @@ pub enum TypescriptType {
     Promise(Box<TypescriptType>),
     // Array(Box<TypescriptType>),
     // Tuple(Vec<TypescriptType>),
+}
+
+impl TypescriptType {
+    pub fn wrapped_with_promise(&self) -> Self {
+        match self {
+            TypescriptType::Promise(inner) => TypescriptType::Promise(inner.clone()),
+            other => TypescriptType::Promise(Box::new(other.clone())),
+        }
+    }
 }
 
 impl Display for TypescriptType {
