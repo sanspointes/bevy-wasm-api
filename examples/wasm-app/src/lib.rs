@@ -31,6 +31,10 @@ struct MyApi;
 
 #[bevy_wasm_api]
 impl MyApi {
+    pub fn test_result(world: &mut World) -> Result<bool, bool> {
+        Ok(true)
+    }
+
     pub fn my_method(world: &mut World, r: f32, g: f32, b: f32) {
         let mut sys_state = SystemState::<(
             Commands,

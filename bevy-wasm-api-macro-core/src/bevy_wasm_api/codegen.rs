@@ -1,8 +1,8 @@
 use proc_macro2::{TokenStream, Ident, Span};
 use quote::{quote, ToTokens};
-use syn::{punctuated::Punctuated, FnArg, token::Comma};
+use syn::{punctuated::Punctuated, FnArg, token::Comma, Error};
 
-use crate::{analyze::Model, bevy_wasm_api::{analyze::MethodModel, utils::{get_ident_of_fn_arg, get_ts_type_of_fn_arg}}};
+use crate::{analyze::Model, bevy_wasm_api::{analyze::{MethodModel, ApiReturnType}, utils::{get_ident_of_fn_arg, get_ts_type_of_fn_arg, generate_return_type_tokens}}};
 
 pub fn codegen(model: Model) -> TokenStream {
     let Model {
@@ -11,29 +11,11 @@ pub fn codegen(model: Model) -> TokenStream {
         method_definitions,
     } = model;
 
+    // Build the typescript method definitions for extra ts types
     let mut ts_method_definitions = String::new();
-
-    println!("method_definitions: {method_definitions:?}");
     for def in &method_definitions {
-        let ts_return_type = match &def.method_output {
-            syn::ReturnType::Type(_, ty) => {
-                format!("Promise<{}>", ty.into_token_stream())
-            }
-            syn::ReturnType::Default => "Promise<void>".to_string(),
-        };
-        let mut args = String::new();
-        for (i, arg) in def.remaining_inputs.iter().enumerate() {
-            let ident = get_ident_of_fn_arg(arg).unwrap();
-            let ts_type = get_ts_type_of_fn_arg(arg);
-            args += &format!("{}: {}", ident, ts_type);
-            if i != def.remaining_inputs.len() - 1 {
-                args += ", "
-            }
-        }
-
-        ts_method_definitions += &format!("\t{}_wasm({args}) {};\n", def.method_name, ts_return_type);
+        ts_method_definitions += &def.js_method_definiton;
     }
-
     let wasm_class_def = format!(
         "\nexport class {} {{\n\tfree();\n\n{}}}",
         struct_name, ts_method_definitions
@@ -41,7 +23,7 @@ pub fn codegen(model: Model) -> TokenStream {
 
     let mut rs_method_definitions = vec![];
     for def in method_definitions {
-        let MethodModel { method_name, method_output, world_ident, remaining_inputs } = def;
+        let MethodModel { method_name, js_method_name: _, js_method_definiton: _, api_return_type, world_ident, remaining_inputs } = def;
 
         // Seperate world call (injected via execute_in_world) from rest of args (provided by js)
         let world_arg_ident = get_ident_of_fn_arg(&world_ident).unwrap();
@@ -71,18 +53,15 @@ pub fn codegen(model: Model) -> TokenStream {
             original_method_args.push(arg_ident.clone());
         }
 
-        let return_tokens = match method_output {
-            syn::ReturnType::Type(_, ty) => {
-                todo!();
-            }
-            syn::ReturnType::Default => quote!{ Ok(bevy_wasm_api::JsValue::UNDEFINED) },
-        };
+        // Handle the conversion of the return type into a jsvalue, here we use IntoWasmAbi to
+        // create the JsValues.
+        let return_tokens = generate_return_type_tokens(Ident::new("ret_val", Span::call_site()), api_return_type);
 
         rs_method_definitions.push(quote! {
             #[wasm_bindgen(skip_typescript)]
             pub fn #wasm_method_name(#(#input_method_args),*) -> bevy_wasm_api::Promise {
                 bevy_wasm_api::future_to_promise(bevy_wasm_api::execute_in_world(bevy_wasm_api::ExecutionChannel::FrameStart, move |#world_ident|{
-                    let response = #struct_name::#method_name(#original_method_args);
+                    let ret_val = #struct_name::#method_name(#original_method_args);
                     #return_tokens
                 }))
             }

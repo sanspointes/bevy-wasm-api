@@ -1,10 +1,28 @@
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::{Ident, TokenStream, Span};
+use quote::ToTokens;
 use syn::{ItemImpl, Error, punctuated::Punctuated, FnArg, token::Comma, ReturnType};
+
+use crate::bevy_wasm_api::utils::{get_ident_of_fn_arg, get_ts_type_of_fn_arg};
+
+#[derive(Debug)]
+pub enum ApiReturnType {
+    Void,
+    /// Primitives can be returned with wasm_bindgen natively
+    Primitive,
+    /// FromWasmAbi must be converted to wasm abi and then to js value
+    FromWasmAbi,
+    /// Array type must be converted to a JSArray first
+    Array(Box<ApiReturnType>),
+
+    Result(Box<ApiReturnType>, Box<ApiReturnType>),
+} 
 
 #[derive(Debug)]
 pub struct MethodModel {
     pub method_name: Ident,
-    pub method_output: ReturnType,
+    pub js_method_name: Ident,
+    pub js_method_definiton: String,
+    pub api_return_type: ApiReturnType,
     pub world_ident: FnArg,
     pub remaining_inputs: Vec<FnArg>,
 }
@@ -18,7 +36,7 @@ pub struct Model {
 
 fn extract_first_method_argument(args: &Punctuated<FnArg, Comma>) -> syn::Result<(FnArg, Vec<FnArg>)> {
     let mut iter = args.iter();
-    let mut first = iter.next();
+    let first = iter.next();
 
     println!("Args length: {}", args.len());
 
@@ -44,15 +62,13 @@ pub fn analyze(ts: TokenStream) -> syn::Result<Model> {
     for item in ast.items {
         if let syn::ImplItem::Fn(method) = item {
             let method_name = &method.sig.ident;
-            // let wasm_method_name = format!("{}_wasm", struct_name);
-            // let method_vis = &method.vis;
-            // let method_block = &method.block;
             let method_inputs = &method.sig.inputs;
             let method_output = &method.sig.output;
 
             let (first, remaining) = extract_first_method_argument(method_inputs)?;
             println!("\nFirst: {first:?}\nRemaining: {remaining:?}");
 
+            // First check function validatiy
             if let FnArg::Receiver(_) = &first {
                 return Err(Error::new_spanned(first.clone(), "Can't use receiver arguments.  First argument must be `arg1: &mut World`."))
             }
@@ -69,11 +85,52 @@ pub fn analyze(ts: TokenStream) -> syn::Result<Model> {
                 return Err(Error::new_spanned(first, "First argument in function is not a reference.  First argument must be `arg1: &mut World`."));
             }
 
+            // Define the TS doc method
+            let js_method_name = Ident::new(&format!("{method_name}_js"), Span::call_site());
+
+            let ts_return_type = match &method_output {
+                syn::ReturnType::Type(_, ty) => {
+                    format!("Promise<{}>", ty.into_token_stream())
+                }
+                syn::ReturnType::Default => "Promise<void>".to_string(),
+            };
+            let mut args = String::new();
+            for (i, arg) in remaining.iter().enumerate() {
+                let ident = get_ident_of_fn_arg(arg).unwrap();
+                let ts_type = get_ts_type_of_fn_arg(arg);
+                args += &format!("{}: {}", ident, ts_type);
+                if i != remaining.len() - 1 {
+                    args += ", "
+                }
+            }
+
+            let js_method_definiton = format!("\t{}_wasm({args}) {};\n", method_name, ts_return_type);
+
+            let api_return_type = match method_output {
+                syn::ReturnType::Type(_, ty) => {
+                    match **ty {
+                        syn::Type::Path(ref ty_path) => {
+                            println!("{:#?}", ty_path.path.segments);
+                            let last_segment = ty_path.path.segments.last().unwrap();
+
+                            ApiReturnType::try_from(last_segment)?
+                        }
+                        syn::Type::Tuple(ref ty_tuple) => {
+                            return Err(Error::new_spanned(method_output, format!("Return type of {method_name} is a {ty_tuple:?}. This is not supported yet.")));
+                        }
+                        ref ret_type => panic!("Return type of {method_name} is {ret_type:?}. This is not supported and probably wont be."),
+                    }
+                }
+                syn::ReturnType::Default => ApiReturnType::Void,
+            };
+
             // TODO: CHeck if first argument is bevy::prelude::World;
 
             method_definitions.push( MethodModel {
                 method_name: method_name.clone(),
-                method_output: method_output.clone(),
+                js_method_name,
+                js_method_definiton,
+                api_return_type,
                 world_ident: first,
                 remaining_inputs: remaining,
             });
