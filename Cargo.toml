@@ -6,7 +6,12 @@ edition = "2021"
 [workspace]
 resolver = "2"
 
-members = [ "bevy-wasm-api-macro","bevy-wasm-api-macro-core" , "examples/wasm-app"]
+members = [ 
+    "bevy-wasm-api-macro",
+    "bevy-wasm-api-macro-core",
+    "examples/wasm-app",
+    "examples/vite-app/bevy-app"
+]
 
 [dependencies]
 bevy-wasm-api-macro = { version = "0.1.0", path = "bevy-wasm-api-macro" }

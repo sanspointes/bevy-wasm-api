@@ -1,3 +1,5 @@
+mod utils;
+
 use bevy::{ecs::system::SystemState, prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_wasm_api::bevy_wasm_api;
 use tsify::Tsify;
@@ -5,7 +7,7 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(start)]
 pub fn start() {
-    // console_error_panic_hook::set_once();
+    utils::set_panic_hook();
 }
 
 #[wasm_bindgen]
@@ -14,7 +16,7 @@ pub fn setup_bevy_app(canvas_id: String) {
 
     let default_plugins = DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
-            title: "wasm-app example".to_string(),
+            title: "Vite Example".to_string(),
             resolution: (10., 10.).into(),
             canvas: Some(canvas_id),
             fit_canvas_to_parent: true,
@@ -23,8 +25,16 @@ pub fn setup_bevy_app(canvas_id: String) {
         ..Default::default()
     });
 
+    app.add_plugins(bevy_wasm_api::BevyWasmApiPlugin);
     app.add_plugins(default_plugins);
+    app.add_systems(Startup, setup);
     app.run();
+}
+
+fn setup(
+    mut commands: Commands,
+) {
+    commands.spawn(Camera2dBundle::default());
 }
 
 #[derive(Default, Tsify, serde::Deserialize, serde::Serialize)]
@@ -39,23 +49,11 @@ struct MyApi;
 #[allow(dead_code)]
 #[bevy_wasm_api]
 impl MyApi {
-    pub fn test_result(_world: &mut World) -> Result<bool, bool> {
-        Ok(true)
-    }
-
     pub fn count_entites(world: &mut World) -> usize {
         world.query::<Entity>().iter(world).len()
     }
 
-    pub fn test_string(_world: &mut World) -> String {
-        "Hello".to_string()
-    }
-
-    pub fn test_struct(_world: &mut World) -> MyStruct {
-        MyStruct::default()
-    }
-
-    pub fn my_method(world: &mut World, r: f32, g: f32, b: f32) {
+    pub fn spawn_box(world: &mut World, x: f32, y: f32, z: f32) -> Entity {
         let mut sys_state = SystemState::<(
             Commands,
             ResMut<Assets<Mesh>>,
@@ -63,13 +61,15 @@ impl MyApi {
         )>::new(world);
 
         let (mut commands, mut meshes, mut materials) = sys_state.get_mut(world);
-        commands.spawn(MaterialMesh2dBundle {
+        let entity = commands.spawn(MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(50.).into()).into(),
-            material: materials.add(ColorMaterial::from(Color::rgb(r, g, b))),
-            transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
+            material: materials.add(ColorMaterial::from(Color::RED)),
+            transform: Transform::from_translation(Vec3::new(x, y, z)),
             ..default()
-        });
+        }).id();
 
         sys_state.apply(world);
+
+        entity
     }
 }

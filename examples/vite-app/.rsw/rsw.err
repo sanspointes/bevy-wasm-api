@@ -1,0 +1,31 @@
+[INFO]: 🎯  Checking for the Wasm target...
+[INFO]: 🌀  Compiling to Wasm...
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/cgm/projects/personal/bevy-wasm-api/examples/vite-app/bevy-app/Cargo.toml
+workspace: /home/cgm/projects/personal/bevy-wasm-api/Cargo.toml
+   Compiling bevy-app v0.1.0 (/home/cgm/projects/personal/bevy-wasm-api/examples/vite-app/bevy-app)
+error[E0277]: the trait bound `MyApiWasmApi: IntoWasmAbi` is not satisfied
+  --> examples/vite-app/bevy-app/src/lib.rs:42:1
+   |
+42 | #[bevy_wasm_api]
+   | ^^^^^^^^^^^^^^^^ the trait `IntoWasmAbi` is not implemented for `MyApiWasmApi`
+   |
+   = help: the following other types implement trait `IntoWasmAbi`:
+             bool
+             char
+             isize
+             i8
+             i16
+             i32
+             i64
+             usize
+           and 379 others
+   = note: required for `MyApiWasmApi` to implement `ReturnWasmAbi`
+   = note: this error originates in the attribute macro `wasm_bindgen::prelude::__wasm_bindgen_class_marker` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `bevy-app` (lib) due to 1 previous error
+Error: Compiling your crate to WebAssembly failed
+Caused by: Compiling your crate to WebAssembly failed
+Caused by: failed to execute `cargo build`: exited with exit status: 101
+  full command: cd "bevy-app" && "cargo" "build" "--lib" "--target" "wasm32-unknown-unknown"

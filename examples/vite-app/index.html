@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + TS</title>
+    <style>
+        html,body {
+            width: 100vw;
+            height: 100vh;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .row {
+            display: flex;
+            justify-content: stretch;
+        }
+
+        #toolbar {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #sidebar {
+            min-width: 300px;
+        }
+        #canvas-container {
+            flex: 1 0 auto;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="toolbar">
+    </div>
+    <div class="row" style="flex: 1 0 auto">
+        <div id="sidebar">
+        </div>
+        <div id="canvas-container">
+            <canvas id="canvas"/>
+        </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
