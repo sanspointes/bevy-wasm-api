@@ -1,8 +1,10 @@
 # Bevy Wasm Api
 
 Opinionated plugin and proc macro to easily builded typed APIs for Js -> Wasm -> Js communication in the browser.
+[Very Simple Demo Editor](https://sanspointes.github.io/bevy-wasm-api/)
 
 ![https://private-user-images.githubusercontent.com/7402063/305640938-ec1b5504-9077-4d8e-a448-127376db901c.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDgxNzEwMTMsIm5iZiI6MTcwODE3MDcxMywicGF0aCI6Ii83NDAyMDYzLzMwNTY0MDkzOC1lYzFiNTUwNC05MDc3LTRkOGUtYTQ0OC0xMjczNzZkYjkwMWMucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI0MDIxNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDAyMTdUMTE1MTUzWiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9YmMxZGMyNDMzYzdmMmNiMjU1ZTk0YjA0YjBlODQyOTliMjk3MTYyODAwNGFlMTkyNDM5ZTI2ZGFiOTA0N2UzNCZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmYWN0b3JfaWQ9MCZrZXlfaWQ9MCZyZXBvX2lkPTAifQ.RDmzYYnx9oIJmpVSQGZcv5ezTjWSuIBAeiEoYIdvhCY](Image of typed wasm api returning an optional tuple asyncronously.)
+
 
 ## How to use
 
