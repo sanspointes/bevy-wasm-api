@@ -2,7 +2,7 @@ use proc_macro2::{Ident, TokenStream, Span};
 use quote::quote;
 use syn::{ImplItemFn, Error, Result};
 
-use crate::bevy_wasm_api_2::analyze::utils::TypescriptArg;
+use crate::analyze::utils::TypescriptArg;
 
 use super::utils::{TypescriptType, ApiMethodArgs};
 

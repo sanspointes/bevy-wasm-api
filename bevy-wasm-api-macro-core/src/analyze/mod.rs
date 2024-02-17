@@ -4,7 +4,7 @@ pub mod utils;
 use proc_macro2::Ident;
 use syn::spanned::Spanned;
 
-use crate::bevy_wasm_api_2::parse::Ast;
+use crate::parse::Ast;
 
 use self::item_fn::ImplItemFnModel;
 
