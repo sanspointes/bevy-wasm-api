@@ -7,10 +7,6 @@
 *** Don't forget to give the project a star!
 *** Thanks again! Now go create something AMAZING! :D
 -->
-<p align="center">
-  <img src="" title="">
-</p>
-
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
