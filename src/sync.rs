@@ -2,10 +2,10 @@ use core::panic;
 use std::{sync::{Arc, Mutex}, borrow::Borrow, cell::RefCell};
 
 use wasm_bindgen::prelude::*;
-use bevy::prelude::World;
 use js_sys::Promise;
 use wasm_bindgen_futures::{JsFuture, future_to_promise};
 use futures::channel::oneshot;
+use bevy_ecs::world::World;
 
 pub(crate) fn execute_world_tasks_begin(world: &mut World) {
     CHANNEL_FRAME_START.with(|rx| {

@@ -1,5 +1,6 @@
 use bevy::{ecs::system::SystemState, prelude::*, sprite::MaterialMesh2dBundle};
-use bevy_wasm_api::bevy_wasm_api;
+use bevy_wasm_api::{bevy_wasm_api, reexports};
+use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(start)]
@@ -26,6 +27,12 @@ pub fn setup_bb_core(canvas_id: String) {
     app.run();
 }
 
+#[derive(Default, Tsify, serde::Deserialize, serde::Serialize)]
+struct MyStruct {
+    fielda: i32,
+    fieldb: String,
+}
+
 #[wasm_bindgen(skip_typescript)]
 struct MyApi;
 
@@ -41,6 +48,10 @@ impl MyApi {
 
     pub fn test_string(_world: &mut World) -> String {
         "Hello".to_string()
+    }
+
+    pub fn test_struct(_world: &mut World) -> MyStruct {
+        MyStruct::default()
     }
 
     pub fn my_method(world: &mut World, r: f32, g: f32, b: f32) {

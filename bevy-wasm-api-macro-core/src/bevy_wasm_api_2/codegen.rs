@@ -5,14 +5,21 @@ use super::analyze::{Model, utils::TypescriptType};
 
 pub fn build_ret_val_tokens(ident: Ident, ts_type: &TypescriptType) -> TokenStream {
     match ts_type {
-        TypescriptType::Void => quote!{ Ok(bevy_wasm_api::JsValue::UNDEFINED) },
-        TypescriptType::Number => quote!{ Ok(bevy_wasm_api::JsValue::from(#ident)) },
-        TypescriptType::String => quote!{ Ok(bevy_wasm_api::JsValue::from(#ident)) },
-        TypescriptType::Boolean => quote!{ Ok(bevy_wasm_api::JsValue::from(#ident)) },
-        TypescriptType::Class(class_name) => {
-            let class_ident = Ident::new(class_name, Span::call_site());
-
-            todo!("{}", class_name)
+        TypescriptType::Void => quote!{ Ok(wasm_bindgen::JsValue::UNDEFINED) },
+        TypescriptType::Number => quote!{ Ok(wasm_bindgen::JsValue::from(#ident)) },
+        TypescriptType::String => quote!{ Ok(wasm_bindgen::JsValue::from(#ident)) },
+        TypescriptType::Boolean => quote!{ Ok(wasm_bindgen::JsValue::from(#ident)) },
+        TypescriptType::Struct(_struct_name) => {
+            quote! {
+                let js_value_result = serde_wasm_bindgen::to_value(&#ident);
+                match js_value_result {
+                    Ok(js_value) => Ok(js_value),
+                    Err(reason) => {
+                        let error = js_sys::Error::new(format!("{reason}").as_str());
+                        Err(wasm_bindgen::JsValue::from(error))
+                    }
+                }
+            }
         }
         TypescriptType::Promise(inner) => {
             let ok_tokens = build_ret_val_tokens(Ident::new("inner", Span::call_site()), inner);
@@ -21,8 +28,8 @@ pub fn build_ret_val_tokens(ident: Ident, ts_type: &TypescriptType) -> TokenStre
                 match #ident {
                     Ok(inner) => #ok_tokens,
                     Err(reason) => {
-                        let error = bevy_wasm_api::Error::new(format!("{reason}").as_str());
-                        Err(JsValue::from(error))
+                        let error = js_sys::Error::new(format!("{reason}").as_str());
+                        Err(wasm_bindgen::JsValue::from(error))
                     },
                 }
             }
@@ -58,8 +65,9 @@ pub fn codegen(model: Model) -> TokenStream {
 
         wasm_method_defs.push(quote!{
             #[wasm_bindgen(skip_typescript)]
-            pub fn #wasm_method_ident(#api_args_def) -> bevy_wasm_api::Promise {
-                bevy_wasm_api::future_to_promise(bevy_wasm_api::execute_in_world(bevy_wasm_api::ExecutionChannel::FrameStart, move |#world_ident| {
+            pub fn #wasm_method_ident(#api_args_def) -> bevy_wasm_api::reexports::js_sys::Promise {
+                use bevy_wasm_api::reexports::*;
+                wasm_bindgen_futures::future_to_promise(bevy_wasm_api::execute_in_world(bevy_wasm_api::ExecutionChannel::FrameStart, move |#world_ident| {
                     let ret_val = #struct_name::#original_method_ident(#original_call_args);
                     #ret_val_handler
                 }))

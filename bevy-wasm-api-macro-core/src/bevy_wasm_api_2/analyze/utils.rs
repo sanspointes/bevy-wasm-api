@@ -52,7 +52,7 @@ pub enum TypescriptType {
     String,
     Number,
     Boolean,
-    Class(String),
+    Struct(String),
     Promise(Box<TypescriptType>),
     // Array(Box<TypescriptType>),
     // Tuple(Vec<TypescriptType>),
@@ -74,7 +74,7 @@ impl Display for TypescriptType {
             TypescriptType::String => write!(f, "string"),
             TypescriptType::Number => write!(f, "number"),
             TypescriptType::Boolean => write!(f, "boolean"),
-            TypescriptType::Class(class) => write!(f, "{}", class),
+            TypescriptType::Struct(struct_name) => write!(f, "{}", struct_name),
             TypescriptType::Promise(inner) => write!(f, "Promise<{}>", *inner),
         }
     }
@@ -117,7 +117,7 @@ impl TryFrom<&TypePath> for TypescriptType {
 
                 Ok(TypescriptType::Promise(Box::new(ts_type)))
             }
-            class => Ok(TypescriptType::Class(class.to_string())),
+            class => Ok(TypescriptType::Struct(class.to_string())),
         }
     }
 }
