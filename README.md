@@ -46,18 +46,59 @@ console.log(entityCount) // number
 
 ```
 
+### How it works
+
+The crate uses a similar approach to the [deferred promise](https://dev.to/webduvet/deferred-promise-pattern-2j59)
+by parking the function that we want to execute (See `Task` in [`sync.rs`](./src/sync.rs)),
+executing all the parked tasks, and then converts the result back to a JsValue.
+
+The real complexity is in the effort to support typed returns in typescript which is handled in the [bevy-wasm-api-macro-core`](./bevy-wasm-api-macro-core/src/analyze/) crate.
+
+Given the following input
+
+```rust
+#[bevy_wasm_api]
+impl MyApi {
+    pub fn my_function(world: &mut World, x:f32, y: f32) -> bool {
+        // Do anything with your &mut World
+        true
+    }
+}
+```
+
+The output will look something like this.
+
+```rust
+// Exposes `MyApiWasmApi` as `MyApi` in javascript
+#[wasm_bindgen(js_class = "MyApi")]
+impl MyApiWasmApi {
+    // Skips wasm_bindgen typescript types so we can generate better typescript types.
+    #[wasm_bindgen(skip_typescript)]
+    pub fn my_function(x: f32, y: f32) -> js_sys::Promise {
+        // Uses execute_in_world to get a `world: &mut World`, converts the future to a Js Promise
+        wasm_bindgen_futures::future_to_promise(bevy_wasm_api::execute_in_world(bevy_wasm_api::ExecutionChannel::FrameStart, |world| {
+            // Calls the original method 
+            let ret_val = MyApi::my_function(world, x, y);
+            // Return the original return type as a JsValue
+            // The real code that's generated here is actually dependent on the return type but I'll keep it simple in this example.
+            Ok(JsValue::from(ret_val))
+        }))
+    }
+}
+```
+
+
 ### Examples
 
 #### `vite-app` 
 
-This is your "kitchen sink" example showcasing a lot of the features of the crate.  It's deployed to [TODO](https://www.google.com/).
+This is your "kitchen sink" example showcasing a lot of the features of the crate.
 This is how I am personally using the package to develop my app (a CAD/design program).
 
 #### `wasm-app`
 
 This shows how to use the crate purely from the bevy side.  
 Showcasing the changes you'd make / dependencies you'd need in bevy.
-
 
 ### Features
 
