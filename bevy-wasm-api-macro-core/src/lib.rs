@@ -27,9 +27,19 @@ pub fn bevy_wasm_api_2(
         Err(err) => return err.to_compile_error(),
     };
 
-    println!("Model: {model:?}\n");
     let tokens = bevy_wasm_api_2::codegen::codegen(model);
-
-    println!("Tokens: {tokens}\n");
+    #[cfg(feature = "debug")]
+    {
+        let file = syn::parse_file(&tokens.to_string());
+        match file {
+            Ok(string) => {
+                let formatted = prettyplease::unparse(&string);
+                println!("bevy_wasm_api: Output {}", formatted);
+            }
+            Err(reason) => {
+                println!("bevy_wasm_api: Could not parse output.  This should probably never happen. \nreason: {reason:?}");
+            }
+        }
+    }
     tokens
 }

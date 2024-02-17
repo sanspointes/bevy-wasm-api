@@ -10,3 +10,6 @@ proc-macro = true
 
 [dependencies]
 bevy-wasm-api-macro-core = { version = "0.1.0", path = "../bevy-wasm-api-macro-core" }
+
+[features]
+debug = ["bevy-wasm-api-macro-core/debug"]

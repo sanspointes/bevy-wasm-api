@@ -41,7 +41,7 @@ pub fn codegen(model: Model) -> TokenStream {
     // Define typescript
     let mut ts_method_definitions = String::new();
     for method in &model.methods {
-        let mut s = format!("\t{}(", method.js_method_ident());
+        let mut s = format!("\t{}(", &method.original_method_ident);
 
         for arg in &method.typescript_arguments {
             s += format!("{}", arg).as_str();
@@ -52,12 +52,11 @@ pub fn codegen(model: Model) -> TokenStream {
     let ts_class_def = format!("\nexport class {} {{\n{}}}\n", model.struct_name, ts_method_definitions);
 
     // Build the wasm api impl
-    let struct_name = model.struct_name;
+    let struct_name = &model.struct_name;
     let mut wasm_method_defs = vec![];
     for method in &model.methods {
         let original_method_ident = &method.original_method_ident;
         let world_ident = &method.api_method_args.world_ident;
-        let wasm_method_ident = method.js_method_ident();
         let api_args_def = method.api_method_args.api_args_definition_token_stream();
         let original_call_args = method.api_method_args.original_method_call_args_token_stream();
 
@@ -65,7 +64,7 @@ pub fn codegen(model: Model) -> TokenStream {
 
         wasm_method_defs.push(quote!{
             #[wasm_bindgen(skip_typescript)]
-            pub fn #wasm_method_ident(#api_args_def) -> bevy_wasm_api::reexports::js_sys::Promise {
+            pub fn #original_method_ident(#api_args_def) -> bevy_wasm_api::reexports::js_sys::Promise {
                 use bevy_wasm_api::reexports::*;
                 wasm_bindgen_futures::future_to_promise(bevy_wasm_api::execute_in_world(bevy_wasm_api::ExecutionChannel::FrameStart, move |#world_ident| {
                     let ret_val = #struct_name::#original_method_ident(#original_call_args);
@@ -76,14 +75,24 @@ pub fn codegen(model: Model) -> TokenStream {
     }
 
     let original = &model.original_ast;
+    let js_struct_name = Ident::new(&format!("{}WasmApi", model.struct_name), Span::call_site());
+    let struct_name_string = struct_name.to_string();
     quote! {
         #original
 
         #[wasm_bindgen(typescript_custom_section)]
         const TS_APPEND_CONTENT: &'static str = #ts_class_def;
 
-        #[wasm_bindgen(skip_typescript)]
-        impl #struct_name {
+        #[wasm_bindgen]
+        struct #js_struct_name;
+
+        #[wasm_bindgen(js_name = #struct_name_string, skip_typescript)]
+        impl #js_struct_name {
+            #[wasm_bindgen(constructor)]
+            pub fn new() -> Self {
+                Self
+            }
+
             #( #wasm_method_defs )*
         }
     }

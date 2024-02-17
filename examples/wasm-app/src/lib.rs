@@ -1,5 +1,5 @@
 use bevy::{ecs::system::SystemState, prelude::*, sprite::MaterialMesh2dBundle};
-use bevy_wasm_api::{bevy_wasm_api, reexports};
+use bevy_wasm_api::bevy_wasm_api;
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
@@ -33,9 +33,10 @@ struct MyStruct {
     fieldb: String,
 }
 
-#[wasm_bindgen(skip_typescript)]
+#[allow(dead_code)]
 struct MyApi;
 
+#[allow(dead_code)]
 #[bevy_wasm_api]
 impl MyApi {
     pub fn test_result(_world: &mut World) -> Result<bool, bool> {

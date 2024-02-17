@@ -36,9 +36,3 @@ impl TryFrom<&ImplItemFn> for ImplItemFnModel {
         })
     }
 }
-
-impl ImplItemFnModel {
-    pub fn js_method_ident(&self) -> Ident {
-        Ident::new(&format!("{}_js", self.original_method_ident), Span::call_site())
-    }
-}

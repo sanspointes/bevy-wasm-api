@@ -364,6 +364,7 @@ dependencies = [
 name = "bevy-wasm-api-macro-core"
 version = "0.1.0"
 dependencies = [
+ "prettyplease",
  "proc-macro-error",
  "proc-macro2",
  "quote",
@@ -2806,6 +2807,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb458bb7f6e250e6eb79d5026badc10a3ebb8f9a15d1fff0f13d17c71f4d6dee"
 dependencies = [
  "unicode-xid",
+]
+
+[[package]]
+name = "prettyplease"
+version = "0.2.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a41cf62165e97c7f814d2221421dbb9afcbcdb0a88068e5ea206e19951c2cbb5"
+dependencies = [
+ "proc-macro2",
+ "syn 2.0.48",
 ]
 
 [[package]]
