@@ -27,4 +27,5 @@ wasm-bindgen-futures = "0.4"
 debug = ["bevy-wasm-api-macro/debug"]
 
 [dev-dependencies]
+serde = { version = "1.0.196", features = ["derive"] }
 trybuild = "1.0.89"
