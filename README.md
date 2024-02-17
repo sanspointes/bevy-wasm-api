@@ -1,54 +1,147 @@
-# Bevy Wasm Api
+<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+<a name="readme-top"></a>
+<!--
+*** Thanks for checking out the Best-README-Template. If you have a suggestion
+*** that would make this better, please fork the repo and create a pull request
+*** or simply open an issue with the tag "enhancement".
+*** Don't forget to give the project a star!
+*** Thanks again! Now go create something AMAZING! :D
+-->
+<p align="center">
+  <img src="" title="">
+</p>
 
-Opinionated plugin and proc macro to easily builded typed APIs for Js -> Wasm -> Js communication in the browser.
-[Very Simple Demo Editor](https://sanspointes.github.io/bevy-wasm-api/)
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <a href="https://github.com/sanspointes/bevy-wasm-api/">
+    <img src="https://private-user-images.githubusercontent.com/7402063/305640938-ec1b5504-9077-4d8e-a448-127376db901c.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDgyMTE3MTksIm5iZiI6MTcwODIxMTQxOSwicGF0aCI6Ii83NDAyMDYzLzMwNTY0MDkzOC1lYzFiNTUwNC05MDc3LTRkOGUtYTQ0OC0xMjczNzZkYjkwMWMucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI0MDIxNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDAyMTdUMjMxMDE5WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9MzdmNGI0YThjNmY3OTA2MmFlNDUzMjA2NDJmZTljMjQ2ODY2YjlhNmUwMGQ1NmU1YjZjMGQ1NGUxM2MwMDNmZiZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmYWN0b3JfaWQ9MCZrZXlfaWQ9MCZyZXBvX2lkPTAifQ.RovEVadRIq0G7lYUQ02OvWxsh3q9UBoyaUowl797WOg" alt="Image of typed wasm api returning an optional tuple asyncronously.">
+  </a>
 
-![Image of typed wasm api returning an optional tuple asyncronously.](https://private-user-images.githubusercontent.com/7402063/305640938-ec1b5504-9077-4d8e-a448-127376db901c.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDgxNzEwMTMsIm5iZiI6MTcwODE3MDcxMywicGF0aCI6Ii83NDAyMDYzLzMwNTY0MDkzOC1lYzFiNTUwNC05MDc3LTRkOGUtYTQ0OC0xMjczNzZkYjkwMWMucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI0MDIxNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDAyMTdUMTE1MTUzWiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9YmMxZGMyNDMzYzdmMmNiMjU1ZTk0YjA0YjBlODQyOTliMjk3MTYyODAwNGFlMTkyNDM5ZTI2ZGFiOTA0N2UzNCZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmYWN0b3JfaWQ9MCZrZXlfaWQ9MCZyZXBvX2lkPTAifQ.RDmzYYnx9oIJmpVSQGZcv5ezTjWSuIBAeiEoYIdvhCY)
+  <h3 align="center">bevy-wasm-api</h3>
 
+  <p align="center">
+    Opinionated plugin and proc macro to easily builded typed APIs for Js -> Wasm -> Js communication in the browser.
+    <!-- <br /> -->
+    <!-- <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a> -->
+    <!-- <br /> -->
+    <br />
+    <a href="https://sanspointes.github.io/bevy-wasm-api/">View Demo</a>
+    ·
+    <a href="https://github.com/sanspointes/bevy-wasm-api/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/sanspointesbevy-wasm-api/issues">Request Feature</a>
+  </p>
+</div>
 
-## How to use
+<!-- GETTING STARTED -->
+## Getting Started
 
-### 1. Implement your rust api
+This is an example of how you may give instructions on setting up your project locally.
+To get a local copy up and running follow these simple example steps.
+
+### Installation 
+
+Install the `bevy-wasm-api` crate.
+
+```bash
+
+cargo add --git https://github.com/sanspointes/bevy-wasm-api
+cargo add wasm-bindgen                                  
+```
+
+Install optional dependencies to help your development
+
+```bash
+# Required if you want to return custom structs from your api
+cargo add serde --features derive
+# Helpful crate for generating typescript types for custom structs
+cargo add tsify --features js --no-default-features
+```
+
+### Add Plugin to app
 
 ```rust
-// Add BevyWasmApiPlugin to your app
 use bevy_wasm_api::BevyWasmApiPlugin;
-app.add_plugins(BevyWasmApiPlugin);
 
-// Define an api
-#[wasm_bindgen(skip_typescript)]
+#[wasm_bindgen]
+pub fn setup_app(canvas_selector: String) {
+    let mut app = App::new();
+    app.add_plugins(BevyWasmApiPlugin).run();
+}
+```
+
+### Define an Api
+
+:warning: The first argument must be a `world: &mut World`.
+
+```rust
+
+#[wasm_bindgen(skip_typescript)] // Let bevy-wasm-api generate the types
 struct MyApi;
 
 #[bevy_wasm_api]
 impl MyApi {
-    //                  The `&mut World` must be the first argument.
-    pub fn spawn_entity(world: &mut World, x: f32, y: f32, z: f32) {
-        world.spawn(TransformBundle {
-            translation: Vec3::new(x, y, z),
-            ..Default::default(),
-        });
+    pub fn spawn_entity(world: &mut World, x: f32, y: f32, z: f32) -> Entity {
+        world.spawn(
+            TransformBundle {
+                transform: Transform {
+                    translation: Vec3::new(x, y, z),
+                    ..Default::default(),
+                },
+                ..Default::default(),
+            }
+        ).id()
     }
 
-    pub fn count_entities(world: &mut World) -> usize {
-        world.query::<Entity>().iter(world).len()
+    pub fn set_entity_position(world: &mut World, entity: u32, x: f32, y: f32, z: f32) -> Result<(), String> {
+        let entity = Entity::from_raw(entity);
+        let mut transform = world.get_mut::<Transform>(entity).ok_or("Could not find entity".to_string())?;
+        transform.translation.x = x;
+        transform.translation.y = y;
+        transform.translation.z = z;
+        Ok(())
+    }
+    pub fn get_entity_position(world: &mut World, entity: u32) -> Option<(f32, f32, f32)> {
+        let transform = world.get::<Transform>(Entity::from_raw(entity));
+        transform.map(|transform| {
+            let pos = transform.translation;
+            (pos.x, pos.y, pos.z)
+        })
     }
 }
 ```
 
-### 2. Integrate with typescript
+### Use your api in typescript
 
 ```typescript
-import { MyApi } from 'my-bevy-wasm-app';
 
-const myApi = new MyApi();
-// Call the same method, omitting the world argument.
-// This will be run at the start of the next frame.
-myApi.spawn_entity(1, 1, 1);
+import { setup_app, MyApi } from 'bevy-app';
 
-const entityCount = await myApi.count_entities();
-console.log(entityCount) // number
+async function start() {
+    try {
+        setup_app('#canvas-element');
+    } catch (error) {
+        // Ignore, Bevy apps for wasm error for control flow.
+    }
+
+    const api = new MyApi();
+
+    const id = await api.spawn_entity(0, 0, 0);
+
+    await api.set_entity_position(10, 0, 0);
+
+    const pos = await api.get_entity_position(id)
+    console.log(pos) // [10, 0, 0]
+
+    const otherPos = await api.get_entity_position(1000) // (Made up entity)
+    console.log(pos) // undefined
+}
 
 ```
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## How it works
 
@@ -91,6 +184,7 @@ impl MyApiWasmApi {
 }
 ```
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Examples
 
@@ -103,6 +197,8 @@ This is how I am personally using the package to develop my app (a CAD/design pr
 
 This shows how to use the crate purely from the bevy side.  
 Showcasing the changes you'd make / dependencies you'd need in bevy.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Features
 
@@ -132,6 +228,8 @@ Here's an outline of the currently supported feature set + features that I'd lik
 - [ ] Less restrictive dependency versions
 - [ ] Adding proc macro attributes to declare when in the frame lifecycle we want to execute the api method.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Contributing
 
 This crate is an ends to a means for developing an app so I am not sure what level of support I will be
@@ -140,6 +238,8 @@ run into bugs or have ideas for improvements/features feel free to create an iss
 
 > :warning: If the PR is fairly large and complex it could be worth submitting an issue introducing the desired
 > changes + the usecase so I can verify if it's something that belongs in this crate.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Help me out?
 
