@@ -1,3 +1,3 @@
-[RSW::OK]
+[RSW::ERR]
 [RSW::NAME] :~> bevy-app
-[RSW::PATH] :~> /home/cgm/projects/personal/bevy-wasm-api/examples/vite-app/./bevy-app/src/lib.rs
+[RSW::BUILD] :~> wasm-pack build bevy-app --out-dir pkg --target web --dev

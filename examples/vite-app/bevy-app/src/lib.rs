@@ -58,6 +58,21 @@ impl MyApi {
         world.get::<Name>(Entity::from_raw(entity)).map(|name| name.to_string())
     }
 
+    pub fn set_entity_position(world: &mut World, entity: u32, x: f32, y: f32, z: f32) -> Result<bool, String> {
+        let mut transform = world.get_mut::<Transform>(Entity::from_raw(entity)).ok_or("Could not find entity".to_string())?;
+        transform.translation.x = x;
+        transform.translation.y = y;
+        transform.translation.z = z;
+        Ok(true)
+    }
+    pub fn get_entity_position(world: &mut World, entity: u32) -> Option<(f32, f32, f32)> {
+        let transform = world.get::<Transform>(Entity::from_raw(entity));
+        transform.map(|transform| {
+            let pos = transform.translation;
+            (pos.x, pos.y, pos.z)
+        })
+    }
+
     pub fn spawn_circle(world: &mut World, x: f32, y: f32, z: f32) -> Entity {
         let mut sys_state = SystemState::<(
             Commands,

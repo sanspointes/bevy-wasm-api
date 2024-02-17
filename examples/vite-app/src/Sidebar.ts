@@ -9,6 +9,7 @@ function buildEntityInspector(root: HTMLElement, api: MyApi, entityId: number) {
     info.innerText = 'Using bevy world as the source of truth.'
     root.append(info);
 
+    // Setting / Updating name
     const updateEntityName = () => {
         api.get_entity_name(entityId).then((name) => {
             title.innerText = `${entityId}: ${name ?? 'Unnamed'}`
@@ -26,52 +27,60 @@ function buildEntityInspector(root: HTMLElement, api: MyApi, entityId: number) {
     })
     root.append(nameInput);
 
-    // const positionContainer = document.createElement('div');
-    // positionContainer.style.display = 'flex';
-    // root.append(positionContainer);
-    //
-    // const [initialX, initialY, initialZ] = api.get_entity_position(entityId);
-    // const inputX = document.createElement('input');
-    // inputX.type = 'number';
-    // inputX.step = '50';
-    // inputX.value = `${initialX}`;
-    // inputX.placeholder = 'X';
-    // positionContainer.append(inputX);
-    // const inputY = document.createElement('input');
-    // inputY.type = 'number';
-    // inputY.step = '50';
-    // inputY.value = `${initialY}`;
-    // inputY.placeholder = 'Y';
-    // positionContainer.append(inputY);
-    // const inputZ = document.createElement('input');
-    // inputZ.type = 'number';
-    // inputZ.step = '50';
-    // inputZ.value = `${initialZ}`;
-    // inputZ.placeholder = 'Z';
-    // positionContainer.append(inputZ);
-    //
-    // function parseFloatFallback(floatString: string, fallback = 0) {
-    //     try {
-    //         return Number.parseFloat(floatString)
-    //     } catch (_) {
-    //         return fallback;
-    //     }
-    // }
-    //
-    // const handlePositionChanged = async () => {
-    //     const x = parseFloatFallback(inputX.value);
-    //     const y = parseFloatFallback(inputY.value);
-    //     const z = parseFloatFallback(inputZ.value);
-    //     console.log(`Trying to set entity ${entityId} to position ${x},${y},${z}`);
-    //     try {
-    //         await api.set_entity_position(entityId, x, y, z)
-    //     } catch (reason) {
-    //         console.error('Error while setting entity position', reason);
-    //     }
-    // }
-    // inputX.addEventListener('change', handlePositionChanged);
-    // inputY.addEventListener('change', handlePositionChanged);
-    // inputZ.addEventListener('change', handlePositionChanged);
+    // Position
+    const positionContainer = document.createElement('div');
+    positionContainer.style.display = 'flex';
+    root.append(positionContainer);
+
+    const inputX = document.createElement('input');
+    inputX.type = 'number';
+    inputX.step = '50';
+    inputX.placeholder = 'X';
+    positionContainer.append(inputX);
+    const inputY = document.createElement('input');
+    inputY.type = 'number';
+    inputY.step = '50';
+    inputY.placeholder = 'Y';
+    positionContainer.append(inputY);
+    const inputZ = document.createElement('input');
+    inputZ.type = 'number';
+    inputZ.step = '50';
+    inputZ.placeholder = 'Z';
+    positionContainer.append(inputZ);
+
+    const updateEntityPosition = async () => {
+        const pos = await api.get_entity_position(entityId);
+        if (!pos) return;
+        const [initialX, initialY, initialZ] = pos;
+        inputX.value = `${initialX}`;
+        inputY.value = `${initialY}`;
+        inputZ.value = `${initialZ}`;
+    }
+    updateEntityPosition();
+
+    function parseFloatFallback(floatString: string, fallback = 0) {
+        try {
+            return Number.parseFloat(floatString)
+        } catch (_) {
+            return fallback;
+        }
+    }
+
+    const handlePositionChanged = async () => {
+        const x = parseFloatFallback(inputX.value);
+        const y = parseFloatFallback(inputY.value);
+        const z = parseFloatFallback(inputZ.value);
+        console.log(`Trying to set entity ${entityId} to position ${x},${y},${z}`);
+        try {
+            await api.set_entity_position(entityId, x, y, z)
+        } catch (reason) {
+            console.error('Error while setting entity position', reason);
+        }
+        updateEntityPosition();
+    }
+    inputX.addEventListener('change', handlePositionChanged);
+    inputY.addEventListener('change', handlePositionChanged);
+    inputZ.addEventListener('change', handlePositionChanged);
 }
 
 export default function buildSidebar(element: HTMLElement, api: MyApi) {

@@ -33,16 +33,12 @@ struct MyStruct {
     fieldb: String,
 }
 
-#[allow(dead_code)]
+#[wasm_bindgen(skip_typescript)]
 struct MyApi;
 
-#[allow(dead_code)]
 #[bevy_wasm_api]
 impl MyApi {
-    pub fn test(_world: &mut World) -> Vec<i32> {
-        todo!();
-    }
-    pub fn test_2(_world: &mut World) -> Vec<Option<i32>> {
+    pub fn test(_world: &mut World) -> Option<(i32, f32)> {
         todo!();
     }
 }
