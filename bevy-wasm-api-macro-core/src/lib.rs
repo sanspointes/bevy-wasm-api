@@ -22,8 +22,6 @@ pub fn bevy_wasm_api_2(
         Ok(ast) => ast,
         Err(err) => return err.to_compile_error(),
     };
-    println!("Ast: {ast:?}\n");
-
     let model = match bevy_wasm_api_2::analyze::analyze(ast) {
         Ok(model) => model,
         Err(err) => return err.to_compile_error(),

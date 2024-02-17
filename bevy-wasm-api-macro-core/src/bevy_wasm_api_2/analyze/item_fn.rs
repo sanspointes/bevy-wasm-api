@@ -1,4 +1,5 @@
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::{Ident, TokenStream, Span};
+use quote::quote;
 use syn::{ImplItemFn, Error, Result};
 
 use crate::bevy_wasm_api_2::analyze::utils::TypescriptArg;
@@ -33,5 +34,11 @@ impl TryFrom<&ImplItemFn> for ImplItemFnModel {
             typescript_arguments,
             typescript_return_type: TypescriptType::try_from(method_output)?,
         })
+    }
+}
+
+impl ImplItemFnModel {
+    pub fn js_method_ident(&self) -> Ident {
+        Ident::new(&format!("{}_js", self.original_method_ident), Span::call_site())
     }
 }

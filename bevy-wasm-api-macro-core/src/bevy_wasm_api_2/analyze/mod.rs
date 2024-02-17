@@ -1,5 +1,5 @@
 mod item_fn;
-mod utils;
+pub mod utils;
 
 use proc_macro2::Ident;
 use syn::spanned::Spanned;
@@ -10,13 +10,15 @@ use self::item_fn::ImplItemFnModel;
 
 #[derive(Debug)]
 pub struct Model {
+    pub original_ast: Ast,
     pub struct_name: Ident,
     pub methods: Vec<ImplItemFnModel>,
 }
 
 impl Model {
-    pub fn new(struct_name: Ident) -> Self {
+    pub fn new(original_ast: Ast, struct_name: Ident) -> Self {
         Self {
+            original_ast,
             struct_name,
             methods: vec![],
         }
@@ -33,7 +35,7 @@ pub fn analyze(ast: Ast) -> syn::Result<Model> {
         "Impl block must have a name".to_string(),
     ))?;
 
-    let mut model = Model::new(struct_name.clone());
+    let mut model = Model::new(ast.clone(), struct_name.clone());
 
     for item in ast.items {
         if let syn::ImplItem::Fn(impl_item_fn) = item {

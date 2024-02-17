@@ -1,6 +1,7 @@
-use std::fmt::Display;
+use std::fmt::{Display, write};
 
-use proc_macro2::Ident;
+use proc_macro2::{Ident, TokenStream};
+use quote::quote;
 use syn::{
     punctuated::Punctuated, spanned::Spanned, token::Comma, Error, FnArg, GenericArgument, Type,
     TypePath, Pat, ReturnType,
@@ -50,6 +51,7 @@ pub enum TypescriptType {
     Void,
     String,
     Number,
+    Boolean,
     Class(String),
     Promise(Box<TypescriptType>),
     // Array(Box<TypescriptType>),
@@ -71,6 +73,7 @@ impl Display for TypescriptType {
             TypescriptType::Void => write!(f, "void"),
             TypescriptType::String => write!(f, "string"),
             TypescriptType::Number => write!(f, "number"),
+            TypescriptType::Boolean => write!(f, "boolean"),
             TypescriptType::Class(class) => write!(f, "{}", class),
             TypescriptType::Promise(inner) => write!(f, "Promise<{}>", *inner),
         }
@@ -88,6 +91,7 @@ impl TryFrom<&TypePath> for TypescriptType {
             "i8" | "i16" | "i32" | "i64" | "u8" | "u16" | "u32" | "u64" | "usize" | "f32" => {
                 Ok(TypescriptType::Number)
             }
+            "bool" => Ok(TypescriptType::Boolean),
             "String" | "str" => Ok(TypescriptType::String),
             "Result" => {
                 let args = match &last_segment.arguments {
@@ -213,21 +217,30 @@ impl TryFrom<&Punctuated<FnArg, Comma>> for ApiMethodArgs {
     }
 }
 
-pub(super) fn extract_first_method_argument(
-    args: &Punctuated<FnArg, Comma>,
-) -> syn::Result<(FnArg, Vec<FnArg>)> {
-    let mut iter = args.iter();
-    let first = iter.next();
-
-    println!("Args length: {}", args.len());
-
-    if first.is_none() {
-        return Err(Error::new_spanned(
-            args,
-            "Missing first argument on function.  First argument must be of type &mut World.",
-        ));
+impl ApiMethodArgs {
+    /// Token stream for defining the args on the external api (exposed to js)
+    pub fn api_args_definition_token_stream(&self) -> TokenStream {
+        let mut args: Vec<TokenStream> = vec![];
+        args.push(quote!{ &self });
+        args.extend(self.api_args.iter().map(|fn_arg|{
+                quote!{ #fn_arg }
+        }));
+        quote!{ #(#args),* }
     }
 
-    let remaining: Vec<_> = iter.cloned().collect();
-    Ok((first.unwrap().clone(), remaining))
+    /// Token stream for passing in the args to the inner function (original method).
+    pub fn original_method_call_args_token_stream(&self) -> TokenStream {
+        let mut idents = vec![self.world_ident.clone()];
+        idents.extend(self.api_args.iter().map(|arg| {
+            let FnArg::Typed(pat_ty) = arg else {
+                panic!("Impossible")
+            };
+            let Pat::Ident(ref pat_ident) = *pat_ty.pat else {
+                panic!("Impossible");
+            };
+            pat_ident.ident.clone()
+        }));
+
+        quote!{ #(#idents),* }
+    }
 }
