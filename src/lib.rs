@@ -1,4 +1,5 @@
 mod sync;
+pub mod convert;
 
 pub mod reexports {
     pub use wasm_bindgen;
