@@ -3,14 +3,54 @@ use quote::quote;
 
 use super::analyze::{utils::TypescriptType, Model};
 
-pub fn build_ret_val_tokens(ident: Ident, ts_type: &TypescriptType) -> TokenStream {
-    match ts_type {
-        TypescriptType::Void => quote! { Ok(wasm_bindgen::JsValue::UNDEFINED) },
-        TypescriptType::Number => quote! { Ok(wasm_bindgen::JsValue::from(#ident)) },
-        TypescriptType::String => quote! { Ok(wasm_bindgen::JsValue::from(#ident)) },
-        TypescriptType::Boolean => quote! { Ok(wasm_bindgen::JsValue::from(#ident)) },
-        TypescriptType::Struct(_struct_name) => {
-            quote! {
+/// Contains a token stream that converts an ident into a JsValue
+/// Sometimes it will already be wrapped in an Ok() and sometimes not.
+/// You can make it always wrapped in an OK() by using as_result_tokens.
+///
+/// * `is_result`: Whether or not the tokens evaluate to an Ok(T)
+/// * `tokens`: The token stream
+pub struct IntoJsTokens {
+    is_result: bool,
+    tokens: TokenStream,
+}
+impl IntoJsTokens {
+    pub fn new(tokens: TokenStream) -> Self {
+        Self {
+            is_result: false,
+            tokens,
+        }
+    }
+    pub fn new_as_result(tokens: TokenStream) -> Self {
+        Self {
+            is_result: true,
+            tokens,
+        }
+    }
+
+    pub fn as_result_tokens(&self) -> TokenStream {
+        let self_tokens = &self.tokens;
+        if !self.is_result {
+            quote! { Ok(#self_tokens)}
+        } else {
+            self_tokens.clone()
+        }
+    }
+}
+
+impl TypescriptType {
+    pub fn generate_into_js_tokens(&self, ident: Ident) -> IntoJsTokens {
+        match self {
+            TypescriptType::Void => IntoJsTokens::new(quote! { wasm_bindgen::JsValue::UNDEFINED }),
+            TypescriptType::Number => {
+                IntoJsTokens::new(quote! { wasm_bindgen::JsValue::from(#ident) })
+            }
+            TypescriptType::String => {
+                IntoJsTokens::new(quote! { wasm_bindgen::JsValue::from(#ident) })
+            }
+            TypescriptType::Boolean => {
+                IntoJsTokens::new(quote! { wasm_bindgen::JsValue::from(#ident) })
+            }
+            TypescriptType::Struct(_struct_name) => IntoJsTokens::new_as_result(quote! {
                 match serde_wasm_bindgen::to_value(&#ident) {
                     Ok(js_value) => Ok(js_value),
                     Err(reason) => {
@@ -18,48 +58,52 @@ pub fn build_ret_val_tokens(ident: Ident, ts_type: &TypescriptType) -> TokenStre
                         Err(wasm_bindgen::JsValue::from(error))
                     }
                 }
-            }
-        }
-        TypescriptType::Promise(inner) => {
-            let ok_tokens = build_ret_val_tokens(Ident::new("inner", Span::call_site()), inner);
+            }),
+            TypescriptType::Promise(inner) => {
+                let ok_tokens = inner
+                    .generate_into_js_tokens(Ident::new("inner", Span::call_site()))
+                    .as_result_tokens();
 
-            quote! {
-                match #ident {
-                    Ok(inner) => #ok_tokens,
-                    Err(reason) => {
-                        let error = js_sys::Error::new(format!("{reason}").as_str());
-                        Err(wasm_bindgen::JsValue::from(error))
-                    },
-                }
-            }
-        }
-        TypescriptType::Array(inner) => {
-            let value_to_js_value_tokens = build_ret_val_tokens(Ident::new("value", Span::call_site()), inner);
-
-            quote! {
-                {
-                    use std::convert::TryInto;
-
-                    let js_array = js_sys::Array::new_with_length(#ident.len().try_into().unwrap());
-
-                    for (i, value) in #ident.iter().enumerate() {
-                        let js_value = #value_to_js_value_tokens?;
-                        js_array.set(i.try_into().unwrap(), js_value);
+                IntoJsTokens::new_as_result(quote! {
+                    match #ident {
+                        Ok(inner) => #ok_tokens,
+                        Err(reason) => {
+                            let error = js_sys::Error::new(format!("{reason}").as_str());
+                            Err(wasm_bindgen::JsValue::from(error))
+                        },
                     }
-                    Ok(js_array.into())
+                })
+            }
+            TypescriptType::Array(inner) => {
+                let to_js_tokens = inner
+                    .generate_into_js_tokens(Ident::new("value", Span::call_site()));
+                let to_js_token_stream = to_js_tokens.tokens;
+
+                if to_js_tokens.is_result {
+                    IntoJsTokens::new_as_result(quote!{
+                        Ok(bevy_wasm_api::convert::vec_to_js_value(
+                            #ident.into_iter().map(|value| #to_js_token_stream).collect::<Result<Vec<_>, wasm_bindgen::JsValue>>()?
+                        ))
+                    })
+                } else {
+                    IntoJsTokens::new_as_result(quote!{
+                        Ok(bevy_wasm_api::convert::vec_to_js_value(
+                            #ident.into_iter().map(|value| #to_js_token_stream).collect::<Vec<_>>()
+                        ))
+                    })
                 }
             }
-        }
-        TypescriptType::Option(inner) => {
-            let value_to_js_value_tokens = build_ret_val_tokens(Ident::new("inner", Span::call_site()), inner);
+            TypescriptType::Option(inner) => {
+                let value_to_js_value_tokens = inner
+                    .generate_into_js_tokens(Ident::new("inner", Span::call_site()))
+                    .as_result_tokens();
 
-            quote! {
-                {
+                IntoJsTokens::new_as_result(quote! {
                     match #ident {
                         Some(inner) => #value_to_js_value_tokens,
                         None => Ok(wasm_bindgen::JsValue::UNDEFINED),
                     }
-                }
+                })
             }
         }
     }
@@ -100,10 +144,10 @@ pub fn codegen(model: Model) -> TokenStream {
             .api_method_args
             .original_method_call_args_token_stream();
 
-        let ret_val_handler = build_ret_val_tokens(
-            Ident::new("ret_val", Span::call_site()),
-            &method.typescript_return_type,
-        );
+        let ret_val_tokens = &method
+            .typescript_return_type
+            .generate_into_js_tokens(Ident::new("ret_val", Span::call_site()))
+            .as_result_tokens();
 
         wasm_method_defs.push(quote!{
             #[wasm_bindgen(skip_typescript)]
@@ -111,7 +155,7 @@ pub fn codegen(model: Model) -> TokenStream {
                 use bevy_wasm_api::reexports::*;
                 wasm_bindgen_futures::future_to_promise(bevy_wasm_api::execute_in_world(bevy_wasm_api::ExecutionChannel::FrameStart, move |#world_ident| {
                     let ret_val = #struct_name::#original_method_ident(#original_call_args);
-                    #ret_val_handler
+                    #ret_val_tokens
                 }))
             }
         })

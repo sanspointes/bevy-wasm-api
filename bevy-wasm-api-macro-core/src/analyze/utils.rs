@@ -162,17 +162,6 @@ impl TryFrom<&ReturnType> for TypescriptType {
                     )),
                 }
             }
-            // FnArg::Receiver(receiver) => Err(Error::new(
-            //     receiver.span(),
-            //     "Cannot create a typescript type from a receiver argument.",
-            // )),
-            // FnArg::Typed(pat_ty) => match *pat_ty.ty {
-            //     syn::Type::Path(ref path) => TypescriptType::try_from(path),
-            //     ref unknown => Err(Error::new(
-            //         unknown.span(),
-            //         "Cannot create a typescript type from typed argument.  Unknown type.",
-            //     )),
-            // },
         }
     }
 }
