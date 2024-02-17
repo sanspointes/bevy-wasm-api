@@ -33,7 +33,7 @@ struct WorldTask {
 fn rx_to_promise(rx: oneshot::Receiver<()>) -> Promise {
     future_to_promise(async move {
         match rx.await {
-            Ok(result) => Ok(JsValue::NULL),
+            Ok(_) => Ok(JsValue::NULL),
             Err(e) => panic!("rx_to_promise: Panic with {e:?}"),
         }
     })
