@@ -1,4 +1,4 @@
-import { type MyApi, WasmVec3 } from 'bevy-app';
+import { type MyApi } from 'bevy-app';
 
 function buildEntityInspector(root: HTMLElement, api: MyApi, entityId: number) {
     const title = document.createElement('h4');
