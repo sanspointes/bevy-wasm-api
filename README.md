@@ -113,9 +113,9 @@ Here's an outline of the currently supported feature set + features that I'd lik
         - [ ] Use a Result polyfill so the final return type is `Result<JsResult<T, E>>`
     - [x] Infers `Vec<T>` as typescript typescript `Array<T>` type
         - [ ] Infers an `Iter<T>` as typescript `Array<T>`?
+    - [x] Infers `Option<T>` as typescript `T | undefined` type
     - [ ] Infers `i32[]`, and other number arrays as typescript `Int32Array`
     - [ ] Infers tuples (i.e. `(Type1, Type2)`) as typescript `[Type1, Type2]` type
-    - [ ] Infers `Option<T>` as typescript `T | undefined` type
     - [ ] Handle `Future<T>` as typescript `Promise<T>`?
 - [ ] Type inference / handling of argument types
     - [x] Input parameters handled entirely by `wasm_bindgen`. [tsify](https://github.com/madonoharu/tsify) is good for making this more ergonomic.

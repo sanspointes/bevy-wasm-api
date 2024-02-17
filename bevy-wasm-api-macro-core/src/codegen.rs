@@ -11,14 +11,11 @@ pub fn build_ret_val_tokens(ident: Ident, ts_type: &TypescriptType) -> TokenStre
         TypescriptType::Boolean => quote! { Ok(wasm_bindgen::JsValue::from(#ident)) },
         TypescriptType::Struct(_struct_name) => {
             quote! {
-                {
-                    let js_value_result = serde_wasm_bindgen::to_value(&#ident);
-                    match js_value_result {
-                        Ok(js_value) => Ok(js_value),
-                        Err(reason) => {
-                            let error = js_sys::Error::new(format!("{reason}").as_str());
-                            Err(wasm_bindgen::JsValue::from(error))
-                        }
+                match serde_wasm_bindgen::to_value(&#ident) {
+                    Ok(js_value) => Ok(js_value),
+                    Err(reason) => {
+                        let error = js_sys::Error::new(format!("{reason}").as_str());
+                        Err(wasm_bindgen::JsValue::from(error))
                     }
                 }
             }
@@ -50,6 +47,18 @@ pub fn build_ret_val_tokens(ident: Ident, ts_type: &TypescriptType) -> TokenStre
                         js_array.set(i.try_into().unwrap(), js_value);
                     }
                     Ok(js_array.into())
+                }
+            }
+        }
+        TypescriptType::Option(inner) => {
+            let value_to_js_value_tokens = build_ret_val_tokens(Ident::new("inner", Span::call_site()), inner);
+
+            quote! {
+                {
+                    match #ident {
+                        Some(inner) => #value_to_js_value_tokens,
+                        None => Ok(wasm_bindgen::JsValue::UNDEFINED),
+                    }
                 }
             }
         }

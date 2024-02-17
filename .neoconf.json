@@ -1,0 +1,9 @@
+{
+    "lspconfig": {
+        "rust-analyzer": {
+            "files": {
+                "exlude": [".direnv/"]
+            }
+        }
+    }
+}
