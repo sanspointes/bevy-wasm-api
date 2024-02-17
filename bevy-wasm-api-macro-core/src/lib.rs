@@ -4,7 +4,7 @@ mod codegen;
 use proc_macro2::TokenStream;
 
 pub fn bevy_wasm_api(
-    attrs: TokenStream,
+    _attrs: TokenStream,
     ts: TokenStream,
 ) -> TokenStream {
     #[cfg(feature = "debug")]
@@ -19,7 +19,7 @@ pub fn bevy_wasm_api(
                 println!("bevy_wasm_api: Could not parse input.  This should probably never happen. \nreason: {reason:?}");
             }
         }
-        let file = syn::parse_file(&attrs.to_string());
+        let file = syn::parse_file(&_attrs.to_string());
         match file {
             Ok(string) => {
                 let formatted = prettyplease::unparse(&string);

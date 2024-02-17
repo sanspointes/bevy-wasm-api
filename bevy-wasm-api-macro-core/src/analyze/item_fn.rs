@@ -1,10 +1,9 @@
-use proc_macro2::{Ident, TokenStream, Span};
-use quote::quote;
-use syn::{ImplItemFn, Error, Result};
+use proc_macro2::Ident;
+use syn::{Error, ImplItemFn, Result};
 
 use crate::analyze::utils::TypescriptArg;
 
-use super::utils::{TypescriptType, ApiMethodArgs};
+use super::utils::{ApiMethodArgs, TypescriptType};
 
 #[derive(Debug)]
 pub struct ImplItemFnModel {
@@ -21,12 +20,13 @@ impl TryFrom<&ImplItemFn> for ImplItemFnModel {
         let method_inputs = &method.sig.inputs;
         let method_output = &method.sig.output;
 
-
         let api_method_args = ApiMethodArgs::try_from(method_inputs)?;
 
-        let typescript_arguments = api_method_args.api_args.iter().map(|fn_arg| {
-            TypescriptArg::try_from(fn_arg)
-        }).collect::<Result<Vec<TypescriptArg>>>()?;
+        let typescript_arguments = api_method_args
+            .api_args
+            .iter()
+            .map(TypescriptArg::try_from)
+            .collect::<Result<Vec<TypescriptArg>>>()?;
 
         Ok(ImplItemFnModel {
             original_method_ident: method_name.clone(),

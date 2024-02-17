@@ -1,10 +1,10 @@
-use std::fmt::{Display, write};
+use std::fmt::Display;
 
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::{
-    punctuated::Punctuated, spanned::Spanned, token::Comma, Error, FnArg, GenericArgument, Type,
-    TypePath, Pat, ReturnType,
+    punctuated::Punctuated, spanned::Spanned, token::Comma, Error, FnArg, GenericArgument, Pat,
+    ReturnType, Type, TypePath,
 };
 
 #[derive(Debug)]
@@ -37,11 +37,8 @@ impl TryFrom<&FnArg> for TypescriptArg {
                     ref unknown => return Err(Error::new(unknown.span(), format!("Cannot create typescript arg from typed argument `{unknown:?}`.  Unexpected argument identifier."))),
                 };
 
-                Ok(TypescriptArg {
-                    ident,
-                    ty,
-                })
-            },
+                Ok(TypescriptArg { ident, ty })
+            }
         }
     }
 }
@@ -181,24 +178,36 @@ impl TryFrom<&Punctuated<FnArg, Comma>> for ApiMethodArgs {
     type Error = Error;
     fn try_from(value: &Punctuated<FnArg, Comma>) -> Result<Self, Self::Error> {
         if value.is_empty() {
-            return Err(Error::new(value.span(), "Argument must have the at least 1 argument of `world: &mut World`."));
+            return Err(Error::new(
+                value.span(),
+                "Argument must have the at least 1 argument of `world: &mut World`.",
+            ));
         }
 
         let mut iter = value.iter();
         let first = iter.next().unwrap();
-        if let FnArg::Receiver(_) = &first {
-        }
+        if let FnArg::Receiver(_) = &first {}
 
         let world_ident = match first {
-            FnArg::Receiver(_) => return Err(Error::new_spanned(first.clone(), "First argument must be `world: &mut World`.  Instead found `self`.")),
+            FnArg::Receiver(_) => {
+                return Err(Error::new_spanned(
+                    first.clone(),
+                    "First argument must be `world: &mut World`.  Instead found `self`.",
+                ))
+            }
             FnArg::Typed(ref first_typed) => {
                 match *first_typed.ty {
                     Type::Reference(ref reference) => {
                         if reference.mutability.is_none() {
-                            return Err(Error::new_spanned(reference, format!("First argument must be `world: &mut World`.  First argument is a reference but is not mutable {:?}.", reference)))
+                            return Err(Error::new_spanned(reference, format!("First argument must be `world: &mut World`.  First argument is a reference but is not mutable {:?}.", reference)));
                         }
                     }
-                    ref unknown => return Err(Error::new_spanned(unknown, "First argument is unexpected type.  "))
+                    ref unknown => {
+                        return Err(Error::new_spanned(
+                            unknown,
+                            "First argument is unexpected type.  ",
+                        ))
+                    }
                 }
 
                 match *first_typed.pat {
@@ -221,11 +230,11 @@ impl ApiMethodArgs {
     /// Token stream for defining the args on the external api (exposed to js)
     pub fn api_args_definition_token_stream(&self) -> TokenStream {
         let mut args: Vec<TokenStream> = vec![];
-        args.push(quote!{ &self });
-        args.extend(self.api_args.iter().map(|fn_arg|{
-                quote!{ #fn_arg }
+        args.push(quote! { &self });
+        args.extend(self.api_args.iter().map(|fn_arg| {
+            quote! { #fn_arg }
         }));
-        quote!{ #(#args),* }
+        quote! { #(#args),* }
     }
 
     /// Token stream for passing in the args to the inner function (original method).
@@ -241,6 +250,6 @@ impl ApiMethodArgs {
             pat_ident.ident.clone()
         }));
 
-        quote!{ #(#idents),* }
+        quote! { #(#idents),* }
     }
 }
