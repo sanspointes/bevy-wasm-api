@@ -1,14 +1,14 @@
-use proc_macro2::{TokenStream, Ident, Span};
+use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 
-use super::analyze::{Model, utils::TypescriptType};
+use super::analyze::{utils::TypescriptType, Model};
 
 pub fn build_ret_val_tokens(ident: Ident, ts_type: &TypescriptType) -> TokenStream {
     match ts_type {
-        TypescriptType::Void => quote!{ Ok(wasm_bindgen::JsValue::UNDEFINED) },
-        TypescriptType::Number => quote!{ Ok(wasm_bindgen::JsValue::from(#ident)) },
-        TypescriptType::String => quote!{ Ok(wasm_bindgen::JsValue::from(#ident)) },
-        TypescriptType::Boolean => quote!{ Ok(wasm_bindgen::JsValue::from(#ident)) },
+        TypescriptType::Void => quote! { Ok(wasm_bindgen::JsValue::UNDEFINED) },
+        TypescriptType::Number => quote! { Ok(wasm_bindgen::JsValue::from(#ident)) },
+        TypescriptType::String => quote! { Ok(wasm_bindgen::JsValue::from(#ident)) },
+        TypescriptType::Boolean => quote! { Ok(wasm_bindgen::JsValue::from(#ident)) },
         TypescriptType::Struct(_struct_name) => {
             quote! {
                 let js_value_result = serde_wasm_bindgen::to_value(&#ident);
@@ -24,7 +24,7 @@ pub fn build_ret_val_tokens(ident: Ident, ts_type: &TypescriptType) -> TokenStre
         TypescriptType::Promise(inner) => {
             let ok_tokens = build_ret_val_tokens(Ident::new("inner", Span::call_site()), inner);
 
-            quote!{
+            quote! {
                 match #ident {
                     Ok(inner) => #ok_tokens,
                     Err(reason) => {
@@ -43,13 +43,23 @@ pub fn codegen(model: Model) -> TokenStream {
     for method in &model.methods {
         let mut s = format!("\t{}(", &method.original_method_ident);
 
-        for arg in &method.typescript_arguments {
+        for (i, arg) in method.typescript_arguments.iter().enumerate() {
             s += format!("{}", arg).as_str();
+            if i < method.typescript_arguments.len() - 1 {
+                s += ", ";
+            }
         }
-        s += format!("): {};\n", method.typescript_return_type.wrapped_with_promise()).as_str();
+        s += format!(
+            "): {};\n",
+            method.typescript_return_type.wrapped_with_promise()
+        )
+        .as_str();
         ts_method_definitions += &s;
     }
-    let ts_class_def = format!("\nexport class {} {{\n{}}}\n", model.struct_name, ts_method_definitions);
+    let ts_class_def = format!(
+        "\nexport class {} {{\n\tconstructor();\n{}\tfree(): void;\n}}\n",
+        model.struct_name, ts_method_definitions
+    );
 
     // Build the wasm api impl
     let struct_name = &model.struct_name;
@@ -58,9 +68,14 @@ pub fn codegen(model: Model) -> TokenStream {
         let original_method_ident = &method.original_method_ident;
         let world_ident = &method.api_method_args.world_ident;
         let api_args_def = method.api_method_args.api_args_definition_token_stream();
-        let original_call_args = method.api_method_args.original_method_call_args_token_stream();
+        let original_call_args = method
+            .api_method_args
+            .original_method_call_args_token_stream();
 
-        let ret_val_handler = build_ret_val_tokens(Ident::new("ret_val", Span::call_site()), &method.typescript_return_type);
+        let ret_val_handler = build_ret_val_tokens(
+            Ident::new("ret_val", Span::call_site()),
+            &method.typescript_return_type,
+        );
 
         wasm_method_defs.push(quote!{
             #[wasm_bindgen(skip_typescript)]
@@ -83,10 +98,10 @@ pub fn codegen(model: Model) -> TokenStream {
         #[wasm_bindgen(typescript_custom_section)]
         const TS_APPEND_CONTENT: &'static str = #ts_class_def;
 
-        #[wasm_bindgen]
+        #[wasm_bindgen(skip_typescript)]
         struct #js_struct_name;
 
-        #[wasm_bindgen(js_name = #struct_name_string, skip_typescript)]
+        #[wasm_bindgen(js_name = #struct_name_string)]
         impl #js_struct_name {
             #[wasm_bindgen(constructor)]
             pub fn new() -> Self {
