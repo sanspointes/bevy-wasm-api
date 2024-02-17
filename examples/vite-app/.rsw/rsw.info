@@ -1,3 +1,0 @@
-[RSW::ERR]
-[RSW::NAME] :~> bevy-app
-[RSW::BUILD] :~> wasm-pack build bevy-app --out-dir pkg --target web --dev

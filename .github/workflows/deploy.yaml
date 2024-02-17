@@ -1,14 +1,35 @@
+name: deploy vite-app example
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache .cargo / target folder
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - uses: dtolnay/rust-toolchain@stable
         with:
           target: wasm32-unknown-unknown
 
-      - run: cargo install rsw
+      - uses: taiki-e/cache-cargo-install-action@v1
+        with:
+          tool: wasm-pack
 
       - run: cd examples/vite-app
 
@@ -20,12 +41,18 @@ jobs:
               args: [--frozen-lockfile, --strict-peer-dependencies]
 
       - name: "Build Bevy Examples"
-        run: rsw build && pnpm build
+        run: cd examples/vite-app && pnpm build && pnpm github-pages-bundle
 
-      - uses: actions/upload-artifact@v4
+      - name: Fix permissions
+        run: |
+          chmod -c -R +rX "examples/vite-app/" | while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line"
+          done
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: vite-app
-          path: ./dist
+          path: examples/vite-app/dist
 
   deploy:
     # Add a dependency to the build job
@@ -48,4 +75,4 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4 # or specific "vX.X.X" version tag for this action
         with:
-          artifact_name: vite-app
+          artifact_name: github-pages

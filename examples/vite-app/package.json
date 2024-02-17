@@ -4,8 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"rsw watch\"",
-    "build": "tsc && vite build",
+    "dev": "concurrently \"vite\" \"cd bevy-app && wasm-pack build --dev\"",
+    "build": "pnpm run build:wasm && pnpm run build:js",
+    "build:js": "vite build",
+    "build:wasm": "cd bevy-app && wasm-pack build && cd ..",
+    "github-pages-bundle": "cd dist && tar -czvf ../github-pages.tar.gz ./",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -15,6 +18,7 @@
     "concurrently": "^8.2.2",
     "typescript": "^5.2.2",
     "vite": "^5.1.0",
-    "vite-plugin-rsw": "^2.0.11"
+    "vite-plugin-top-level-await": "^1.4.1",
+    "vite-plugin-wasm": "^3.3.0"
   }
 }
