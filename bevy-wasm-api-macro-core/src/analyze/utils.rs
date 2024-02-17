@@ -4,7 +4,7 @@ use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::{
     punctuated::Punctuated, spanned::Spanned, token::Comma, Error, FnArg, GenericArgument, Pat,
-    ReturnType, Type, TypePath,
+    ReturnType, Type, TypePath, TypeTuple,
 };
 
 #[derive(Debug)]
@@ -53,7 +53,7 @@ pub enum TypescriptType {
     Promise(Box<TypescriptType>),
     Array(Box<TypescriptType>),
     Option(Box<TypescriptType>),
-    // Tuple(Vec<TypescriptType>),
+    Tuple(Vec<TypescriptType>),
 }
 
 impl TypescriptType {
@@ -76,6 +76,16 @@ impl Display for TypescriptType {
             TypescriptType::Promise(inner) => write!(f, "Promise<{}>", *inner),
             TypescriptType::Array(inner) => write!(f, "{}[]", *inner),
             TypescriptType::Option(inner) => write!(f, "{}|undefined", *inner),
+            TypescriptType::Tuple(inner) => {
+                write!(f, "[")?;
+                for (i, inner_ty) in inner.into_iter().enumerate() {
+                    write!(f, "{}", inner_ty)?;
+                    if i < inner.len() - 1 {
+                        write!(f, ", ")?;
+                    }
+                }
+                write!(f, "]")
+            }
         }
     }
 }
@@ -93,9 +103,29 @@ impl TryFrom<&TypePath> for TypescriptType {
             }
             "bool" => Ok(TypescriptType::Boolean),
             "String" | "str" => Ok(TypescriptType::String),
+
             rs_type_str @ "Option" | rs_type_str @ "Result" | rs_type_str @ "Vec" => {
-                let args = match &last_segment.arguments {
-                    syn::PathArguments::AngleBracketed(args) => args,
+                let inner_type: TypescriptType = match &last_segment.arguments {
+                    // If 
+                    syn::PathArguments::AngleBracketed(args) => {
+                        match &args.args[0] {
+                            GenericArgument::Type(ty) => TypescriptType::try_from(ty)?,
+                            ref unknown => {
+                                return Err(Error::new(
+                                    args.args[0].span(),
+                                    format!("Cannot create a typescript type from {rs_type_str}.  No type in result arguments: {unknown:?}."),
+                                ))
+                            }
+                        }
+                    },
+                    // If these are parenthesized that means it's a tuple
+                    syn::PathArguments::Parenthesized(args) => {
+                        let tuple_types: Result<Vec<_>, syn::Error> = args.inputs.iter().map(|ty| {
+                            TypescriptType::try_from(ty)
+                        }).collect();
+
+                        TypescriptType::Tuple(tuple_types?)
+                    },
                     ref unknown => {
                         return Err(Error::new(
                             last_segment.arguments.span(),
@@ -103,26 +133,37 @@ impl TryFrom<&TypePath> for TypescriptType {
                         ))
                     }
                 };
-                let first_type_path = match &args.args[0] {
-                    GenericArgument::Type(Type::Path(ok_type_path)) => ok_type_path,
-                    ref unknown => {
-                        return Err(Error::new(
-                            args.args[0].span(),
-                            format!("Cannot create a typescript type from Result.  No type in result arguments: {unknown:?}."),
-                        ))
-                    }
-                };
-
-                let first_inner_type = TypescriptType::try_from(first_type_path)?;
 
                 match rs_type_str {
-                    "Option" => Ok(TypescriptType::Option(Box::new(first_inner_type))),
-                    "Result" => Ok(TypescriptType::Promise(Box::new(first_inner_type))),
-                    "Vec" => Ok(TypescriptType::Array(Box::new(first_inner_type))),
+                    "Option" => Ok(TypescriptType::Option(Box::new(inner_type))),
+                    "Result" => Ok(TypescriptType::Promise(Box::new(inner_type))),
+                    "Vec" => Ok(TypescriptType::Array(Box::new(inner_type))),
                     _ => panic!("Impossible"),
                 }
             }
             class => Ok(TypescriptType::Struct(class.to_string())),
+        }
+    }
+}
+
+impl TryFrom<&TypeTuple> for TypescriptType {
+    type Error = syn::Error;
+    fn try_from(value: &TypeTuple) -> Result<Self, Self::Error> {
+        let inner_types: Result<Vec<_>, Error> = value.elems.iter().map(|v| TypescriptType::try_from(v)).collect();
+        Ok(TypescriptType::Tuple(inner_types?))
+    }
+}
+
+impl TryFrom<&syn::Type> for TypescriptType {
+    type Error = syn::Error;
+    fn try_from(value: &syn::Type) -> Result<Self, Self::Error> {
+        match value {
+            Type::Path(ty_path) => ty_path.try_into(),
+            Type::Tuple(ty_tuple) => ty_tuple.try_into(),
+            ref unknown => Err(Error::new(
+                unknown.span(),
+                format!("Cannot create a typescript type from tuple type.  Unknown inner type: {unknown:?}."),
+            ))
         }
     }
 }
@@ -135,13 +176,7 @@ impl TryFrom<&FnArg> for TypescriptType {
                 receiver.span(),
                 "Cannot create a typescript type from a receiver argument.",
             )),
-            FnArg::Typed(pat_ty) => match *pat_ty.ty {
-                syn::Type::Path(ref path) => TypescriptType::try_from(path),
-                ref unknown => Err(Error::new(
-                    unknown.span(),
-                    format!("Cannot create a typescript type from typed argument.  Unknown type: {unknown:?}."),
-                )),
-            },
+            FnArg::Typed(pat_ty) => TypescriptType::try_from(&*pat_ty.ty),
         }
     }
 }
@@ -151,17 +186,7 @@ impl TryFrom<&ReturnType> for TypescriptType {
     fn try_from(value: &ReturnType) -> Result<Self, Self::Error> {
         match value {
             ReturnType::Default => Ok(TypescriptType::Void),
-            ReturnType::Type(_, ty) => {
-                match **ty {
-                    Type::Path(ref ty_path) => {
-                        TypescriptType::try_from(ty_path)
-                    }
-                    ref unknown => Err(Error::new(
-                        unknown.span(),
-                        format!("Cannot create a typescript type from typed return.  Unknown type: {unknown:?}."),
-                    )),
-                }
-            }
+            ReturnType::Type(_, ty) => TypescriptType::try_from(&**ty),
         }
     }
 }
