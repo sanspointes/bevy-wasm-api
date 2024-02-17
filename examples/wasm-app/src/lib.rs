@@ -43,8 +43,8 @@ impl MyApi {
         Ok(true)
     }
 
-    pub fn test_number(_world: &mut World) -> i32 {
-        1337
+    pub fn count_entites(world: &mut World) -> usize {
+        world.query::<Entity>().iter(world).len()
     }
 
     pub fn test_string(_world: &mut World) -> String {

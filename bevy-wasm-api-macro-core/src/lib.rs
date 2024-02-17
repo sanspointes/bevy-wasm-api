@@ -13,20 +13,20 @@ pub fn bevy_wasm_api(
         match file {
             Ok(string) => {
                 let formatted = prettyplease::unparse(&string);
-                println!("bevy_wasm_api: Input {}", formatted);
+                println!("\nSTART bevy_wasm_api input:\n{}\nEND bevy_wasm_api output\n", formatted);
             }
             Err(reason) => {
-                println!("bevy_wasm_api: Could not parse output.  This should probably never happen. \nreason: {reason:?}");
+                println!("bevy_wasm_api: Could not parse input.  This should probably never happen. \nreason: {reason:?}");
             }
         }
         let file = syn::parse_file(&attrs.to_string());
         match file {
             Ok(string) => {
                 let formatted = prettyplease::unparse(&string);
-                println!("bevy_wasm_api: Input (Attrs) {}", formatted);
+                println!("bevy_wasm_api input attributes: {}", formatted);
             }
             Err(reason) => {
-                println!("bevy_wasm_api: Could not parse output.  This should probably never happen. \nreason: {reason:?}");
+                println!("bevy_wasm_api: Could not parse attributes.  This should probably never happen. \nreason: {reason:?}");
             }
         }
     }
@@ -46,10 +46,10 @@ pub fn bevy_wasm_api(
         match file {
             Ok(string) => {
                 let formatted = prettyplease::unparse(&string);
-                println!("bevy_wasm_api: Output {}", formatted);
+                println!("\nSTART bevy_wasm_api output:\n{}\nEND bevy_wasm_api output\n", formatted);
             }
             Err(reason) => {
-                println!("bevy_wasm_api: Could not parse output.  This should probably never happen. \nreason: {reason:?}");
+                println!("bevy_wasm_api: Could not parse output.  This should probably never happen.\nreason: {reason:?}");
             }
         }
     }
