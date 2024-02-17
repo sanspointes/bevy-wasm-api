@@ -1,0 +1,5 @@
+error: First argument is unexpected type.
+  --> tests/fail/no-mut-ref-world-arg1.rs:10:24
+   |
+10 |     pub fn test(world: World) {
+   |                        ^^^^^

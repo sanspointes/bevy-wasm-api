@@ -1,0 +1,5 @@
+error: First argument must be `world: &mut World`.  Instead found `self`.
+  --> tests/fail/no-receiver-arg1.rs:10:17
+   |
+10 |     pub fn test(&self, help: i32) {
+   |                 ^^^^^
