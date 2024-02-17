@@ -98,10 +98,10 @@ pub fn codegen(model: Model) -> TokenStream {
         #[wasm_bindgen(typescript_custom_section)]
         const TS_APPEND_CONTENT: &'static str = #ts_class_def;
 
-        #[wasm_bindgen(skip_typescript)]
+        #[wasm_bindgen(js_name = #struct_name_string, skip_typescript)]
         struct #js_struct_name;
 
-        #[wasm_bindgen(js_name = #struct_name_string)]
+        #[wasm_bindgen(js_class = #struct_name_string, skip_typescript)]
         impl #js_struct_name {
             #[wasm_bindgen(constructor)]
             pub fn new() -> Self {
