@@ -105,17 +105,18 @@ Showcasing the changes you'd make / dependencies you'd need in bevy.
 Here's an outline of the currently supported feature set + features that I'd like to implement.
 
 - [ ] Type inference / handling of return types
-    - [x] Infers any number (`i32`, ...) as `number` type
-    - [x] Infers `bool` as `bool` type
+    - [x] Infers any number (`i32`, ...) as typescript `number` type
+    - [x] Infers `bool` as typescript `bool` type
     - [x] Correctly handles custom struct returns (must implement From/IntoWasmAbi) (use [tsify](https://github.com/madonoharu/tsify) to generate typescript types).
-    - [x] Infers `&str`/`String` as `string`
-    - [x] Infers `Result<T, E>` as `Promise<T>`
+    - [x] Infers `&str`/`String` as typescript `string`
+    - [x] Infers `Result<T, E>` as typescript `Promise<T>`
         - [ ] Use a Result polyfill so the final return type is `Result<JsResult<T, E>>`
-    - [ ] Infers `i32[]`, and other number arrays as `Int32Array`
-    - [ ] Infers `Vec<T>` as `T[]` type
-    - [ ] Infers tuples (i.e. `(Type1, Type2)`) as `[Type1, Type2]` type
-    - [ ] Infers `Option<T>` as `T | undefined` type
-    - [ ] Handle `Future<T>` as `Promise<T>`
+    - [x] Infers `Vec<T>` as typescript typescript `Array<T>` type
+        - [ ] Infers an `Iter<T>` as typescript `Array<T>`?
+    - [ ] Infers `i32[]`, and other number arrays as typescript `Int32Array`
+    - [ ] Infers tuples (i.e. `(Type1, Type2)`) as typescript `[Type1, Type2]` type
+    - [ ] Infers `Option<T>` as typescript `T | undefined` type
+    - [ ] Handle `Future<T>` as typescript `Promise<T>`?
 - [ ] Type inference / handling of argument types
     - [x] Input parameters handled entirely by `wasm_bindgen`. [tsify](https://github.com/madonoharu/tsify) is good for making this more ergonomic.
     - [ ] Implement custom handling supporting the same typed parameters as return types (above)

@@ -53,6 +53,11 @@ impl MyApi {
         world.query::<Entity>().iter(world).len()
     }
 
+    pub fn get_entities(world: &mut World) -> Vec<Entity> {
+        let result: Vec<_> = world.query::<Entity>().iter(world).collect();
+        result
+    }
+
     pub fn spawn_box(world: &mut World, x: f32, y: f32, z: f32) -> Entity {
         let mut sys_state = SystemState::<(
             Commands,

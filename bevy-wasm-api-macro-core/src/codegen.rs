@@ -11,12 +11,14 @@ pub fn build_ret_val_tokens(ident: Ident, ts_type: &TypescriptType) -> TokenStre
         TypescriptType::Boolean => quote! { Ok(wasm_bindgen::JsValue::from(#ident)) },
         TypescriptType::Struct(_struct_name) => {
             quote! {
-                let js_value_result = serde_wasm_bindgen::to_value(&#ident);
-                match js_value_result {
-                    Ok(js_value) => Ok(js_value),
-                    Err(reason) => {
-                        let error = js_sys::Error::new(format!("{reason}").as_str());
-                        Err(wasm_bindgen::JsValue::from(error))
+                {
+                    let js_value_result = serde_wasm_bindgen::to_value(&#ident);
+                    match js_value_result {
+                        Ok(js_value) => Ok(js_value),
+                        Err(reason) => {
+                            let error = js_sys::Error::new(format!("{reason}").as_str());
+                            Err(wasm_bindgen::JsValue::from(error))
+                        }
                     }
                 }
             }
@@ -31,6 +33,23 @@ pub fn build_ret_val_tokens(ident: Ident, ts_type: &TypescriptType) -> TokenStre
                         let error = js_sys::Error::new(format!("{reason}").as_str());
                         Err(wasm_bindgen::JsValue::from(error))
                     },
+                }
+            }
+        }
+        TypescriptType::Array(inner) => {
+            let value_to_js_value_tokens = build_ret_val_tokens(Ident::new("value", Span::call_site()), inner);
+
+            quote! {
+                {
+                    use std::convert::TryInto;
+
+                    let js_array = js_sys::Array::new_with_length(#ident.len().try_into().unwrap());
+
+                    for (i, value) in #ident.iter().enumerate() {
+                        let js_value = #value_to_js_value_tokens?;
+                        js_array.set(i.try_into().unwrap(), js_value);
+                    }
+                    Ok(js_array.into())
                 }
             }
         }

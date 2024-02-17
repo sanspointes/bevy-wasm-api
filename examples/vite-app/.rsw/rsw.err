@@ -4,26 +4,26 @@ warning: profiles for the non root package will be ignored, specify profiles at 
 package:   /home/cgm/projects/personal/bevy-wasm-api/examples/vite-app/bevy-app/Cargo.toml
 workspace: /home/cgm/projects/personal/bevy-wasm-api/Cargo.toml
    Compiling bevy-app v0.1.0 (/home/cgm/projects/personal/bevy-wasm-api/examples/vite-app/bevy-app)
-error[E0277]: the trait bound `MyApiWasmApi: IntoWasmAbi` is not satisfied
-  --> examples/vite-app/bevy-app/src/lib.rs:42:1
-   |
-42 | #[bevy_wasm_api]
-   | ^^^^^^^^^^^^^^^^ the trait `IntoWasmAbi` is not implemented for `MyApiWasmApi`
-   |
-   = help: the following other types implement trait `IntoWasmAbi`:
-             bool
-             char
-             isize
-             i8
-             i16
-             i32
-             i64
-             usize
-           and 379 others
-   = note: required for `MyApiWasmApi` to implement `ReturnWasmAbi`
-   = note: this error originates in the attribute macro `wasm_bindgen::prelude::__wasm_bindgen_class_marker` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0599]: no method named `try_into` found for type `usize` in the current scope
+   --> examples/vite-app/bevy-app/src/lib.rs:50:1
+    |
+50  | #[bevy_wasm_api]
+    | ^^^^^^^^^^^^^^^^ method not found in `usize`
+    |
+   ::: /home/cgm/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/convert/mod.rs:610:8
+    |
+610 |     fn try_into(self) -> Result<T, Self::Error>;
+    |        -------- the method is available for `usize` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+    = note: 'std::convert::TryInto' is included in the prelude starting in Edition 2021
+    = note: this error originates in the attribute macro `bevy_wasm_api` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: the following trait is implemented but not in scope; perhaps add a `use` for it:
+    |
+1   + use std::convert::TryInto;
+    |
 
-For more information about this error, try `rustc --explain E0277`.
+For more information about this error, try `rustc --explain E0599`.
 error: could not compile `bevy-app` (lib) due to 1 previous error
 Error: Compiling your crate to WebAssembly failed
 Caused by: Compiling your crate to WebAssembly failed

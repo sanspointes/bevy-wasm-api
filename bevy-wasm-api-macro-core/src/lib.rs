@@ -49,7 +49,7 @@ pub fn bevy_wasm_api(
                 println!("\nSTART bevy_wasm_api output:\n{}\nEND bevy_wasm_api output\n", formatted);
             }
             Err(reason) => {
-                println!("bevy_wasm_api: Could not parse output.  This should probably never happen.\nreason: {reason:?}");
+                println!("bevy_wasm_api: Could not parse output.  This should probably never happen.\nreason: {reason:?}\n Tokens: {tokens}");
             }
         }
     }

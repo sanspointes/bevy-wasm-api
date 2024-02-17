@@ -51,7 +51,7 @@ pub enum TypescriptType {
     Boolean,
     Struct(String),
     Promise(Box<TypescriptType>),
-    // Array(Box<TypescriptType>),
+    Array(Box<TypescriptType>),
     // Tuple(Vec<TypescriptType>),
 }
 
@@ -73,6 +73,7 @@ impl Display for TypescriptType {
             TypescriptType::Boolean => write!(f, "boolean"),
             TypescriptType::Struct(struct_name) => write!(f, "{}", struct_name),
             TypescriptType::Promise(inner) => write!(f, "Promise<{}>", *inner),
+            TypescriptType::Array(inner) => write!(f, "{}[]", *inner),
         }
     }
 }
@@ -113,6 +114,30 @@ impl TryFrom<&TypePath> for TypescriptType {
                 let ts_type = TypescriptType::try_from(ok_type_path)?;
 
                 Ok(TypescriptType::Promise(Box::new(ts_type)))
+            },
+            "Vec" => {
+                let args = match &last_segment.arguments {
+                    syn::PathArguments::AngleBracketed(args) => args,
+                    ref unknown => {
+                        return Err(Error::new(
+                            last_segment.arguments.span(),
+                            format!("Cannot create a typescript type from Vec<T>.  Unexpected arguments type: {unknown:?}."),
+                        ))
+                    }
+                };
+                let ok_type_path = match &args.args[0] {
+                    GenericArgument::Type(Type::Path(ok_type_path)) => ok_type_path,
+                    ref unknown => {
+                        return Err(Error::new(
+                            args.args[0].span(),
+                            format!("Cannot create a typescript type from Vec<T>.  No type in result arguments: {unknown:?}."),
+                        ))
+                    }
+                };
+
+                let ts_type = TypescriptType::try_from(ok_type_path)?;
+
+                Ok(TypescriptType::Array(Box::new(ts_type)))
             }
             class => Ok(TypescriptType::Struct(class.to_string())),
         }

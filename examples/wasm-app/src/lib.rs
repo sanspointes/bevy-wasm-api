@@ -46,11 +46,10 @@ impl MyApi {
     pub fn count_entites(world: &mut World) -> usize {
         world.query::<Entity>().iter(world).len()
     }
-
-    pub fn test_string(_world: &mut World) -> String {
-        "Hello".to_string()
+    pub fn get_entities(world: &mut World) -> Vec<Entity> {
+        let result: Vec<_> = world.query::<Entity>().iter(world).collect();
+        result
     }
-
     pub fn test_struct(_world: &mut World) -> MyStruct {
         MyStruct::default()
     }
