@@ -33,9 +33,6 @@
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
-
 ### Installation 
 
 Install the `bevy-wasm-api` crate.
@@ -125,7 +122,7 @@ async function start() {
 
     const id = await api.spawn_entity(0, 0, 0);
 
-    await api.set_entity_position(10, 0, 0);
+    await api.set_entity_position(id, 10, 0, 0);
 
     const pos = await api.get_entity_position(id)
     console.log(pos) // [10, 0, 0]
