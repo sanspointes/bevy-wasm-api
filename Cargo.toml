@@ -15,8 +15,8 @@ members = [
 
 [dependencies]
 bevy-wasm-api-macro = { version = "0.1.0", path = "bevy-wasm-api-macro" }
-bevy_app = "0.12"
-bevy_ecs = "0.12"
+bevy_app = "0.13"
+bevy_ecs = "0.13"
 futures = "0.3"
 js-sys = "0.3"
 serde = "1.0.196"
