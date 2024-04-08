@@ -4,7 +4,7 @@ use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::{
     punctuated::Punctuated, spanned::Spanned, token::Comma, Error, FnArg, GenericArgument, Pat,
-    ReturnType, Type, TypePath, TypeTuple,
+    ReturnType, Type, TypePath, TypeReference, TypeTuple, TypeSlice,
 };
 
 #[derive(Debug)]
@@ -30,6 +30,7 @@ impl TryFrom<&FnArg> for TypescriptArg {
             FnArg::Typed(pat_ty) => {
                 let ty = match *pat_ty.ty {
                     syn::Type::Path(ref path) => TypescriptType::try_from(path)?,
+                    syn::Type::Reference(ref type_reference) => TypescriptType::try_from(type_reference)?,
                     ref unknown => return Err(Error::new(unknown.span(), format!("Cannot create typescript arg from typed argument `{unknown:?}`.  Unexpected argument type."))),
                 };
                 let ident = match *pat_ty.pat {
@@ -146,10 +147,29 @@ impl TryFrom<&TypePath> for TypescriptType {
     }
 }
 
+impl TryFrom<&TypeReference> for TypescriptType {
+    type Error = syn::Error;
+    fn try_from(value: &TypeReference) -> Result<Self, Self::Error> {
+        match *value.elem {
+            Type::Path(ref path) => {
+                TypescriptType::try_from(path)
+            },
+            _ => Err(Error::new(
+                value.span(),
+                format!("Cannot create a typescript type from type reference.  Unexpected arguments type: {value:?}."),
+            ))
+        }
+    }
+}
+
 impl TryFrom<&TypeTuple> for TypescriptType {
     type Error = syn::Error;
     fn try_from(value: &TypeTuple) -> Result<Self, Self::Error> {
-        let inner_types: Result<Vec<_>, Error> = value.elems.iter().map(|v| TypescriptType::try_from(v)).collect();
+        let inner_types: Result<Vec<_>, Error> = value
+            .elems
+            .iter()
+            .map(TypescriptType::try_from)
+            .collect();
         Ok(TypescriptType::Tuple(inner_types?))
     }
 }

@@ -6,11 +6,11 @@ use bevy_ecs::world::World;
 struct MyApi;
 #[bevy_wasm_api]
 impl MyApi {
-    pub fn test_str_ref(_world: &mut World, _help: &str) {
-        todo!();
+    pub fn test_str_ref(_world: &mut World, help: &str) {
+        println!("Help me please {help}");
     }
-    pub fn test_string(_world: &mut World, _help: &str) {
-        todo!();
+    pub fn test_string(_world: &mut World, help: &str) {
+        println!("Help me please {help}");
     }
 }
 
