@@ -11,13 +11,13 @@
 <br />
 <div align="center">
   <a href="https://github.com/sanspointes/bevy-wasm-api/">
-    <img src="https://private-user-images.githubusercontent.com/7402063/305640938-ec1b5504-9077-4d8e-a448-127376db901c.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDgyMTE3MTksIm5iZiI6MTcwODIxMTQxOSwicGF0aCI6Ii83NDAyMDYzLzMwNTY0MDkzOC1lYzFiNTUwNC05MDc3LTRkOGUtYTQ0OC0xMjczNzZkYjkwMWMucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI0MDIxNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDAyMTdUMjMxMDE5WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9MzdmNGI0YThjNmY3OTA2MmFlNDUzMjA2NDJmZTljMjQ2ODY2YjlhNmUwMGQ1NmU1YjZjMGQ1NGUxM2MwMDNmZiZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmYWN0b3JfaWQ9MCZrZXlfaWQ9MCZyZXBvX2lkPTAifQ.RovEVadRIq0G7lYUQ02OvWxsh3q9UBoyaUowl797WOg" alt="Image of typed wasm api returning an optional tuple asyncronously.">
+    <img src="https://github.com/sanspointes/bevy-wasm-api/assets/7402063/89de1680-d9d5-4ff5-9e3f-a02b3e9f39cf" alt="Image of typed wasm api returning an optional tuple asyncronously.">
   </a>
 
   <h3 align="center">bevy-wasm-api</h3>
 
   <p align="center">
-    Opinionated plugin and proc macro to easily builded typed APIs for Js -> Wasm -> Js communication in the browser.
+    Opinionated plugin and proc macro for bevy to easily build typed APIs when running in a wasm instance.
     <!-- <br /> -->
     <!-- <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a> -->
     <!-- <br /> -->
