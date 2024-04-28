@@ -4,7 +4,7 @@ use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::{
     punctuated::Punctuated, spanned::Spanned, token::Comma, Error, FnArg, GenericArgument, Pat,
-    ReturnType, Type, TypePath, TypeReference, TypeTuple, TypeSlice,
+    ReturnType, Type, TypePath, TypeReference, TypeSlice, TypeTuple,
 };
 
 #[derive(Debug)]
@@ -162,14 +162,19 @@ impl TryFrom<&TypeReference> for TypescriptType {
     }
 }
 
+impl TryFrom<&TypeSlice> for TypescriptType {
+    type Error = syn::Error;
+    fn try_from(value: &TypeSlice) -> Result<Self, Self::Error> {
+        let inner_type: Result<TypescriptType, Error> = value.elem.as_ref().try_into();
+        Ok(TypescriptType::Array(Box::new(inner_type?)))
+    }
+}
+
 impl TryFrom<&TypeTuple> for TypescriptType {
     type Error = syn::Error;
     fn try_from(value: &TypeTuple) -> Result<Self, Self::Error> {
-        let inner_types: Result<Vec<_>, Error> = value
-            .elems
-            .iter()
-            .map(TypescriptType::try_from)
-            .collect();
+        let inner_types: Result<Vec<_>, Error> =
+            value.elems.iter().map(TypescriptType::try_from).collect();
         Ok(TypescriptType::Tuple(inner_types?))
     }
 }
@@ -180,6 +185,8 @@ impl TryFrom<&syn::Type> for TypescriptType {
         match value {
             Type::Path(ty_path) => ty_path.try_into(),
             Type::Tuple(ty_tuple) => ty_tuple.try_into(),
+            Type::Reference(ty_reference) => ty_reference.try_into(),
+            Type::Slice(ty_slice) => ty_slice.try_into(),
             ref unknown => Err(Error::new(
                 unknown.span(),
                 format!("Cannot create a typescript type from tuple type.  Unknown inner type: {unknown:?}."),

@@ -208,6 +208,7 @@ Here's an outline of the currently supported feature set + features that I'd lik
         - [ ] Infers an `Iter<T>` as typescript `Array<T>`?
     - [x] Infers `Option<T>` as typescript `T | undefined` type
     - [x] Infers tuples (i.e. `(f32, String)`) as typescript `[number, String]` type
+    - [ ] Infers `&[i32]`, and other number arrays as typescript `Int32Array`
     - [ ] Infers `i32[]`, and other number arrays as typescript `Int32Array`
     - [ ] Handle `Future<T>` as typescript `Promise<T>`?
 - [ ] Type inference / handling of argument types
