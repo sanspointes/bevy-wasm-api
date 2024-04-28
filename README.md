@@ -17,7 +17,7 @@
   <h3 align="center">bevy-wasm-api</h3>
 
   <p align="center">
-    Opinionated plugin and proc macro to easily builded typed APIs for Js -> Wasm -> Js communication in the browser.
+    Opinionated plugin and proc macro for bevy to easily build typed APIs when running in a wasm instance.
     <!-- <br /> -->
     <!-- <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a> -->
     <!-- <br /> -->
