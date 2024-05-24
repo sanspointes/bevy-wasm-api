@@ -7,17 +7,8 @@ use wasm_bindgen_futures::{JsFuture, future_to_promise};
 use futures::channel::oneshot;
 use bevy_ecs::world::World;
 
-pub(crate) fn execute_world_tasks_begin(world: &mut World) {
-    CHANNEL_FRAME_START.with(|rx| {
-        let rx = &rx.borrow().1;
-        while let Ok(task) = rx.borrow().try_recv() {
-            (task.task)(world);
-        }
-    });
-}
-
-pub(crate) fn execute_world_tasks_end(world: &mut World) {
-    CHANNEL_FRAME_END.with(|rx| {
+pub fn execute_world_tasks(world: &mut World) {
+    EXECUTION_CHANNEL.with(|rx| {
         let rx = &rx.borrow().1;
         while let Ok(task) = rx.borrow().try_recv() {
             (task.task)(world);
@@ -43,7 +34,6 @@ pub async fn execute_in_world<
     T: 'static,
     F: FnOnce(&mut World) -> T + 'static,
 >(
-    channel: ExecutionChannel,
     task: F,
 ) -> T {
 
@@ -59,12 +49,7 @@ pub async fn execute_in_world<
 
     let world_task = WorldTask { task: boxed_task };
     {
-        let channel = match channel {
-            ExecutionChannel::FrameStart => &CHANNEL_FRAME_START,
-            ExecutionChannel::FrameEnd => &CHANNEL_FRAME_END,
-        };
-
-        channel.with(|channel| {
+        EXECUTION_CHANNEL.with(|channel| {
             channel.borrow().0.borrow_mut().send(world_task).unwrap();
         });
     }
@@ -78,11 +63,7 @@ pub async fn execute_in_world<
 use std::sync::mpsc::{ Sender, Receiver };
 
 thread_local! {
-    pub static CHANNEL_FRAME_START: (RefCell<Sender<WorldTask>>, RefCell<Receiver<WorldTask>>) = {
-        let (tx, rx) = std::sync::mpsc::channel();
-        (RefCell::new(tx), RefCell::new(rx))
-    };
-    pub static CHANNEL_FRAME_END: (RefCell<Sender<WorldTask>>, RefCell<Receiver<WorldTask>>) = {
+    pub static EXECUTION_CHANNEL: (RefCell<Sender<WorldTask>>, RefCell<Receiver<WorldTask>>) = {
         let (tx, rx) = std::sync::mpsc::channel();
         (RefCell::new(tx), RefCell::new(rx))
     };

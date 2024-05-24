@@ -169,7 +169,7 @@ pub fn codegen(model: Model) -> TokenStream {
             #[wasm_bindgen(skip_typescript)]
             pub fn #original_method_ident(#api_args_def) -> bevy_wasm_api::reexports::js_sys::Promise {
                 use bevy_wasm_api::reexports::*;
-                wasm_bindgen_futures::future_to_promise(bevy_wasm_api::execute_in_world(bevy_wasm_api::ExecutionChannel::FrameStart, move |#world_ident| {
+                wasm_bindgen_futures::future_to_promise(bevy_wasm_api::execute_in_world(move |#world_ident| {
                     let ret_val = #struct_name::#original_method_ident(#original_call_args);
                     #ret_val_tokens
                 }))
