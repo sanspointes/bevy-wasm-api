@@ -1,7 +1,7 @@
 [package]
 name = "bevy-wasm-api-macro"
 description = "Proc macro crate, thin wrapper around bevy-wasm-api-macro-core."
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -9,7 +9,7 @@ edition = "2021"
 proc-macro = true
 
 [dependencies]
-bevy-wasm-api-macro-core = { version = "0.1.0", path = "../bevy-wasm-api-macro-core" }
+bevy-wasm-api-macro-core = { version = "0.2.0", path = "../bevy-wasm-api-macro-core" }
 
 [features]
 debug = ["bevy-wasm-api-macro-core/debug"]

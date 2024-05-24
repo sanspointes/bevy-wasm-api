@@ -1,6 +1,6 @@
 [package]
 name = "bevy-wasm-api"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 [workspace]
@@ -14,7 +14,7 @@ members = [
 ]
 
 [dependencies]
-bevy-wasm-api-macro = { version = "0.1.0", path = "bevy-wasm-api-macro" }
+bevy-wasm-api-macro = { version = "0.2.0", path = "bevy-wasm-api-macro" }
 bevy_app = "0.13"
 bevy_ecs = "0.13"
 futures = "0.3"
