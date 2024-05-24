@@ -17,7 +17,6 @@ pub fn setup_bevy_app(canvas_id: String) {
             title: "wasm-app example".to_string(),
             resolution: (10., 10.).into(),
             canvas: Some(canvas_id),
-            fit_canvas_to_parent: true,
             ..Default::default()
         }),
         ..Default::default()

@@ -18,13 +18,12 @@ pub fn setup_bevy_app(canvas_id: String) {
             title: "Vite Example".to_string(),
             resolution: (10., 10.).into(),
             canvas: Some(canvas_id),
-            fit_canvas_to_parent: true,
             ..Default::default()
         }),
         ..Default::default()
     });
 
-    app.add_plugins(bevy_wasm_api::BevyWasmApiPlugin);
+    app.add_plugins(bevy_wasm_api::BevyWasmApiPlugin::default());
     app.add_plugins(default_plugins);
     app.add_systems(Startup, setup);
     app.run();
@@ -83,7 +82,7 @@ impl MyApi {
         let (mut commands, mut meshes, mut materials) = sys_state.get_mut(world);
         let entity = commands.spawn((
             MaterialMesh2dBundle {
-                mesh: meshes.add(shape::Circle::new(50.).into()).into(),
+                mesh: meshes.add(bevy::math::primitives::Circle::new(10.)).into(),
                 material: materials.add(ColorMaterial::from(Color::RED)),
                 transform: Transform::from_translation(Vec3::new(x, y, z)),
                 ..default()
