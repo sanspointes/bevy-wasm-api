@@ -10,8 +10,8 @@ path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-bevy = "0.13"
-bevy-wasm-api = { version = "0.1.0", path = "../..", features = ["debug"] }
+bevy = "0.14"
+bevy-wasm-api = { version = "0.2.0", path = "../..", features = ["debug"] }
 serde = { version = "1.0.196", features = ["derive"] }
 tsify = { version = "0.4.5", default-features = false, features = ["js"] }
 wasm-bindgen = "0.2.91"

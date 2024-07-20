@@ -249,3 +249,10 @@ Some things I'd love feedback on is:
 - Making better use of wasm_bindgen type inference (currently duplicating logic converting `str` (rust) -> `string` (typescript))
 - All of this is only tested with my depenencies, anything that makes it more versatile (I might be a bit too dumb to make it fully generic)
 - Generalising the type inference improvements into its own crate (could be useful outside of the bevy ecosystem)
+
+## Compatibility 
+
+| bevy-wasm-api version | Bevy version |
+|-----------------------|--------------|
+| 0.2                   | 0.14         |
+| 0.1                   | 0.13         |

@@ -83,7 +83,7 @@ impl MyApi {
         let entity = commands.spawn((
             MaterialMesh2dBundle {
                 mesh: meshes.add(bevy::math::primitives::Circle::new(10.)).into(),
-                material: materials.add(ColorMaterial::from(Color::RED)),
+                material: materials.add(ColorMaterial::from(Color::srgb(1., 0., 0.))),
                 transform: Transform::from_translation(Vec3::new(x, y, z)),
                 ..default()
             },

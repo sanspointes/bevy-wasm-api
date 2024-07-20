@@ -18,10 +18,10 @@ wasm-bindgen = "0.2.84"
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
 console_error_panic_hook = { version = "0.1.7", optional = true }
-bevy-wasm-api = { version = "0.1.0", path = "../../.." }
+bevy-wasm-api = { version = "0.2.0", path = "../../.." }
 serde = { version = "1.0.196", features = ["derive"] }
 tsify = { version = "0.4.5", default-features = false, features = ["js"] }
-bevy = { version = "0.13", default-features = false, features = ["bevy_render", "bevy_scene", "bevy_sprite", "bevy_winit", "webgl2"] }
+bevy = { version = "0.14", default-features = false, features = ["bevy_render", "bevy_scene", "bevy_sprite", "bevy_winit", "webgl2"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
